@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Feedback;
 use App\Models\patientRecord;
 use App\Models\Appointment;
+use App\Models\Customer;
 use App\Models\Holiday;
 use App\Models\Service;
 use App\Models\Patient;
@@ -23,7 +24,7 @@ class DashboardController extends Controller
 
         $totalAppointmentsToday = Appointment::whereDate('date', $today)->count();
         $AppointmentsToday = Appointment::with('service','staff','user.patient')->whereDate('date', $today)->orderBy('time', 'asc')->get();
-        $totalPatients = Patient::count();
+        $totalPatients = Customer::count();
         $CancelledAppointment = Appointment::where('status','cancelled')->count();
         $UpcomingAppointment = Appointment::where('status','upcoming')->count();
         $CompletedAppointment = Appointment::where('status','completed')->whereDate('date', $today)->count();
@@ -36,7 +37,7 @@ class DashboardController extends Controller
 
         $totalAppointmentsByDate = Appointment::selectRaw('DATE(date) as appointment_date, COUNT(*) as total')->whereBetween('date', [$startOfMonth, $endOfMonth])->groupBy('appointment_date')->orderBy('appointment_date')->get();
         $upcomingAppointments = Appointment::with('service','staff',)->whereDate('date', '>=', $today)->orderBy('date')->get();
-        $feedback = Feedback::with('user')->get();
+        $feedback = Feedback::get();
         $feedbackByRating = Feedback::selectRaw('rating, COUNT(*) as total')
             ->groupBy('rating')
             ->orderBy('rating')

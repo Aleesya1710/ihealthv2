@@ -1,4 +1,5 @@
 @include('navigation.navbartop')
+
 <x-app-layout>
     <section class=" py-12 px-6">
         <div class="max-w-5xl mx-auto bg-white p-16 rounded-xl">
@@ -9,13 +10,18 @@
             </h2>
             
             <div class="space-y-4">
-                @foreach ($activeServices as $service)
+                @foreach ($services as $service)
+                @php
+                    $prices = is_array($service->fee) ? $service->fee : (array) $service->fee;
+                    $minPrice = min($prices);
+                    $maxPrice = max($prices);
+                @endphp
                     <div class="flex justify-between items-center bg-[#F9FAFB] p-4 rounded-lg shadow-lg">
                         <div>
                             <p class="font-semibold">{{ $service->name }}</p>
                             <p class="text-sm text-gray-600">{{ $service->description }}</p>
                             <p class="text-sm text-gray-600">
-                                RM{{ $service->price_student }} - RM{{ $service->price_public }} 
+                                RM{{ $minPrice }} - RM{{ $maxPrice }} 
                             </p>
                         </div>
                         <div><a href="{{ route('Customer.createbooking', $service->id) }}"

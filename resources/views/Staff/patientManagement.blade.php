@@ -35,9 +35,9 @@
                     @foreach ($patientrecord as $patient)
                         <tr class="bg-[#F7FAFC] hover:bg-[#E2EDF0] transition-all rounded-lg">
                             <td>{{ $patient->id ?? '-' }}</td>
-                            <td>{{ $patient->name ?? '-' }}</td>
-                            <td>{{ $patient->ic_number ?? '-' }}</td>
-                            <td>{{ $patient->patient_type ?? '-' }}</td>
+                            <td>{{ $patient->user->name ?? '-' }}</td>
+                            <td>{{ $patient->ICNumber ?? '-' }}</td>
+                            <td>{{ $patient->category?? '-' }}</td>
                             <td class="flex justify-center gap-3">
                                 <!-- Update icon -->
                                <a href="{{ route('patientRecord', $patient->user_id) }}" class="text-green-600 hover:text-green-800 ml-2" title="View Record">

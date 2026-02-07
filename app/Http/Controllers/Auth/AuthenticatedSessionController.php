@@ -8,8 +8,8 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
-
 
 class AuthenticatedSessionController extends Controller
 {
@@ -32,8 +32,11 @@ class AuthenticatedSessionController extends Controller
 
         
         $user = Auth::user();
-        if (str_contains($user->email, '.uitm')) {
+        log::info($user);
+        Log::info($user->staff);
+        if ($user->staff) {
             return redirect()->intended('/dashboardS');
+            log::info("masuk");
         }
         return redirect()->intended(route('dashboard', absolute: false));
     }

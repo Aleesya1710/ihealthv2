@@ -16,8 +16,9 @@ class ServiceController extends Controller
     public function index()
     {
         $services = Service::all();
-        $activeServices = Service::where('is_active', 1)->get();
-        return view('Customer.booking', compact('activeServices'));
+        //$activeServices = Service::where('is_active', 1)->get();
+        Log::info($services);
+        return view('Customer.booking', compact('services'));
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
+use App\Models\Customer;
 use App\Models\Patient;
 use App\Models\patientRecord;
 use App\Models\Service;
@@ -24,21 +25,24 @@ class PatientRecordController extends Controller
     $keyword = $request->input('keyword');
     $type = $request->input('patient_type');
 
-    $query = Patient::query();
+    $query = Customer::with('user');
 
-    if (!empty($keyword)) {
-        $query->where(function ($q) use ($keyword) {
-            $q->where('name', 'like', "%$keyword%")
-              ->orWhere('ic_number', 'like', "%$keyword%");
-        });
-    }
+    if ($keyword) {
+    $query->where(function ($q) use ($keyword) {
+        $q->where('ICNumber', 'like', "%{$keyword}%")
+          ->orWhereHas('user', function ($u) use ($keyword) {
+              $u->where('name', 'like', "%{$keyword}%");
+          });
+    });
+}
 
     if (!empty($type)) {
-        $query->where('patient_type', $type);
+        $query->where('category', $type);
     }
 
     $patientrecord = $query->get(); 
-
+    //log::info($query);
+    log::info($patientrecord);
     return view('Staff.patientmanagement', compact('patientrecord'));
 }
 
@@ -62,57 +66,73 @@ class PatientRecordController extends Controller
      * Display the specified resource.
      */
     public function show(string $id)
-    {
-        log::info("sint");
-        log::info($id);
-        $patient = Patient::where('user_id', $id)->first();
-        log::info($patient);
-        $patientrecord = PatientRecord::where('patient_id', $patient->id)->get(); 
-        log::info("sint");
-        $appointments = Appointment::where('patient_id', $patient->id)->latest()->get();
-        $services = Service::all();
-        log::info("sint");
-        log::info($appointments);
-        
-        return view('Staff.viewrecord', compact('patientrecord','patient','appointments','services'));
-    }
+{
+    $patient = Customer::where('user_id', $id)->firstOrFail();
+    Log::info($patient);
+    $patientrecord = PatientRecord::where('customer_id', $patient->id)->get();
+    $appointmentIds = $patientrecord->pluck('appointment_id');
+    $appointments = Appointment::whereIn('id', $appointmentIds)
+        ->latest()
+        ->get();
+    $services = Service::all();
+    Log::info($appointments);
+    return view('Staff.viewrecord', compact('patientrecord', 'patient', 'appointments', 'services')
+    );
+}
+
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        log::info("a");
-        $patient = Patient::findOrFail($id);
-        $patientrecord = PatientRecord::where('patient_id', $patient->id)->get(); 
-        $appointments = Appointment::where('patient_id', $patient->id)->latest()->get();
-        $services = Service::all();
-       
-        return view('Staff.updaterecord', compact('patientrecord','patient','appointments','services'));
+  public function edit(string $id)
+{
+    $patient = Customer::with('user')->findOrFail($id);
+    $patientrecord = PatientRecord::where('customer_id', $patient->id)->get();
+    $appointmentIds = $patientrecord->pluck('appointment_id');
+    //$appointments = Appointment::whereIn('id', $appointmentIds)->get();
+    $selectedReasons = $patientrecord->flatMap(fn($r) => is_string($r->diagnosis) ? json_decode($r->diagnosis, true) ?? [] : ($r->diagnosis ?? []))->unique()->toArray();
+    $selectedInjuries = $patientrecord->flatMap(fn($r) => is_string($r->type_of_injury) ? json_decode($r->type_of_injury, true) ?? [] : ($r->type_of_injury ?? []))->unique()->toArray();
 
-    }
-    
+    $services = Service::all();
+    log::info($selectedInjuries);
+    log::info($selectedReasons);
+    return view('Staff.updaterecord', compact('patientrecord','patient','services','selectedReasons','selectedInjuries'));
+}
+
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id, string $appid)
-    {
-        log::info($request);
-        log::info($id);
-        log::info("b");
-        $id = Patient::findOrFail($id)->user_id;
-        $record = PatientRecord::where('appointment_id',$appid)->first();
-        $goals = is_array($request->treatment_goals) ? json_encode($request->treatment_goals) : null;
-        $record->treatment = $goals;
-        $record->notes = $request->treatment_notes;
-        $record->save();
-        
-        $appointment = Appointment::findOrFail($appid);
-        $appointment->status = 'completed'; 
-        $appointment->save();
-        log::info("c");
-        return $this->show($id)->with('success', 'Treatment updated successfully.');
+  public function update(Request $request, string $customerId, string $appid)
+{
+    $customer = Customer::with('user')->findOrFail($customerId);
+    $record = PatientRecord::where('appointment_id', $appid)->firstOrFail();
+    $placeOfInjury = is_array($request->place_of_injury)? implode(',', array_map(fn ($v) => trim($v, " ,"), $request->place_of_injury)): trim($request->place_of_injury ?? '', " ,");
+    $typeInjury = $request->type_injury ?? [];
+    if (is_string($typeInjury)) {
+        $decoded = json_decode($typeInjury, true);
+        $typeInjury = is_array($decoded) ? $decoded : [$typeInjury];
     }
+    $record->type_of_injury = json_encode($typeInjury);
+    $treatment = $request->treatment ?? [];
+    if (is_string($treatment)) {
+        $decoded = json_decode($treatment, true);
+        $treatment = is_array($decoded) ? $decoded : [$treatment];
+    }
+    $record->treatment = json_encode($treatment);
+    log::info($record);
+    log::info($placeOfInjury);
+    $record->treatment = $treatment;
+    $record->type_of_injury = $typeInjury;
+    $record->place_of_injury = $placeOfInjury;
+    $record->notes = $request->treatment_notes;
+    $record->save();
+    $appointment = Appointment::findOrFail($appid);
+    $appointment->status = 'completed';
+    $appointment->save();
+    log::info('Updated patient record', $record->toArray());
+
+    return $this->show($customer->user->id)->with('success', 'Treatment updated successfully.');
+}
 
     /**
      * Remove the specified resource from storage.
@@ -123,7 +143,7 @@ class PatientRecordController extends Controller
         return view('Staff.patientmanagement');
 
     }
-    public function reportPreview($id)
+    public function reportPreview($id) //nanti letak dekat reportController and just panggil je start 132
     {
         $patient = Patient::findOrFail($id);
         $appointments = Appointment::where('patient_id', $id)->with('service')->get();
@@ -137,7 +157,7 @@ class PatientRecordController extends Controller
         return view('report.report-preview', compact('patient', 'appointments', 'patientrecord','isPDF'));
     }
 
-    public function generatePdf($id)
+    public function generatePdf($id) // just panggil dri reportController (samefunction as atas)
    {
         $patient = Patient::findOrFail($id);
         $appointments = Appointment::where('patient_id', $id)->with('service')->get();

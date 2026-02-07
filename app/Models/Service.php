@@ -2,9 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Service extends Model
 {
-    protected $table = 'service';
+    use HasFactory;
+    protected $table = 'services';
+    protected $fillable = [
+        'name',
+        'description',
+        'fee',
+    ];
+
+    protected $casts = [
+        'fee' => 'array', 
+    ];
+
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }

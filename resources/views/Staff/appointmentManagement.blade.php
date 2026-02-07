@@ -22,9 +22,11 @@
                     <select name="staff_id" class="p-2 border rounded">
                         <option value="">-- All Staff --</option>
                         @foreach ($staff as $staff)
-                            <option value="{{ $staff->id }}" {{ request('staff_id') == $staff->id ? 'selected' : '' }}>
-                                {{ $staff->name }}
+                        @if($staff->position == "Instructor")
+                            <option value="{{ $staff->staffID }}" {{ request('staff_id') == $staff->id ? 'selected' : '' }}>
+                                {{ $staff->user->name }}
                             </option>
+                            @endif
                         @endforeach
                     </select>
 
@@ -56,11 +58,12 @@
                 </thead>
                 <tbody class="text-sm text-gray-700">
                     @foreach ($appointments as $appointment)
+  
                         <tr class="bg-[#F7FAFC] hover:bg-[#E2EDF0] transition-all rounded-lg">
                             <td>{{ $appointment->id ?? '-' }}</td>
-                            <td>{{ $appointment->user->name ?? '-' }}</td>
+                            <td>{{ $appointment->patientRecord->customer->user->name ?? '-' }}</td>
                             <td>{{ $appointment->service->name ?? '-' }}</td>
-                            <td>{{ $appointment->staff->name ?? '-' }}</td>
+                            <td>{{ $appointment->staff->user->name ?? '-' }}</td>
                             <td>{{ $appointment->date }}</td>
                             <td>{{ \Carbon\Carbon::parse($appointment->time)->format('h:i A') }}</td>
                             <td>{{ ucfirst($appointment->status) }}</td>
@@ -96,18 +99,11 @@
     <!-- Modal -->
     <div x-show="editModal" x-cloak class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 ">
         <div class="bg-white p-6 shadow-md w-full max-w-md rounded-xl">
-            <h2 class="text-xl font-semibold mb-4">Edit Appointment</h2>
+            <h2 class="text-xl font-semibold mb-4">Reschedule Appointment</h2>
             <form :action="`/appointments/${selected.id}/update`" method="POST">
                 @csrf
                 @method('POST')
 
-                 <!-- Service -->
-                <label class="block mb-2">Service:</label>
-                <select name="service_id" x-model="selected.service_id" class="w-full border p-2 rounded mb-4">
-                    @foreach($services as $service)
-                        <option value="{{ $service->id }}">{{ $service->name }}</option>
-                    @endforeach
-                </select>
 
                
                 <!-- Date -->
@@ -123,7 +119,6 @@
                 <select name="status" x-model="selected.status" class="w-full border p-2 rounded mb-4">
                     <option value="upcoming">Upcoming</option>
                     <option value="cancelled">Cancelled</option>
-                    <option value="done">Done</option>
                     <option value="completed">Completed</option>
 
                 </select>

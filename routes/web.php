@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\PatientController;
@@ -47,16 +48,12 @@ Route::post('/appointments/{id}/update', [AppointmentController::class, 'update'
 Route::get('/patientmanagement', [PatientRecordController::class, 'index'])->name('patientmanagement');
 Route::get('/patientmanagement/{id}',[PatientRecordController::class, 'show'])->name('patientRecord');
 Route::get('/patientmanagement/{id}/{appointmentId}', [AppointmentController::class, 'edit'])->name('editappointment');
-Route::put('/patientmanagement{id}/{appointmentId}/update', [PatientRecordController::class, 'update'])->name('updateappointment');
+Route::put('/patientmanagement/{id}/{appointmentId}/update', [PatientRecordController::class, 'update'])->name('updateappointment');
 Route::patch('/appointments/{appointment}/destroy', [PatientRecordController::class, 'destroy'])->name('patient.delete');
 Route::get('/patients/{id}/edit', [PatientRecordController::class, 'edit'])->name('patient.edit');
-Route::put('/patients/{id}', [PatientController::class, 'update'])->name('patient.update');
+Route::put('/patients/{id}', [CustomerController::class, 'update'])->name('patient.update');
 Route::get('/patient-report/{id}/preview', [PatientRecordController::class, 'reportPreview'])->name('patients.report.preview');
 Route::get('/patient-report/{id}/generate-pdf', [PatientRecordController::class, 'generatePdf'])->name('patientrecord.report.download');
-Route::get('/holiday', [HolidayController::class, 'index'])->name('holiday.index');
-Route::post('/holiday', [HolidayController::class, 'store'])->name('holiday.store');
-Route::get('/holiday/events', [HolidayController::class, 'events'])->name('holiday.events');
-Route::put('/holidays/{id}', [HolidayController::class, 'update']);
-Route::delete('/holidays/{id}', [HolidayController::class, 'destroy']);
+
 
 require __DIR__.'/auth.php';

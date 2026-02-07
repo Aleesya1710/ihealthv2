@@ -2,25 +2,41 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class patientRecord extends Model
+class PatientRecord extends Model
 {
+    use HasFactory;
+
     protected $table = 'patientRecord';
+
     protected $fillable = [
-        'staff_id',
-        'date',
-        'time',
-        'status',
-        'service_id',
-        'patient_id',
-        'appointment_id',
-        'visit_date', 
+        'place_of_injury',
+        'symptoms',
+        'type_of_injury',
+        'diagnosis',
+        'treatment',
         'notes',
-        'referral_letter'
+        'referral_letter',
+        'customer_id',
+        'appointment_id',
     ];
+
+    protected $casts = [
+        'symptoms' => 'array',
+        'type_of_injury' => 'array',
+        'diagnosis' => 'array',
+        'treatment' => 'array',
+    ];
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function appointment()
-{
-    return $this->belongsTo(Appointment::class, 'appointment_id');
-}
+    {
+        return $this->belongsTo(Appointment::class);
+    }
 }

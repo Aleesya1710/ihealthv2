@@ -14,7 +14,13 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->string('ICNumber')->unique();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('studentID')->nullable()->unique();
+            $table->string('faculty');
+            $table->string('phoneNumber');
+            $table->string('program')->nullable();
+            $table->string('staffID')->nullable()->unique();
+            $table->enum('category', ['student', 'staff', 'public'])->default('public');
+            $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
     }

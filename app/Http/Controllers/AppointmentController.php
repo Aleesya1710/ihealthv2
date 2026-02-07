@@ -1,11 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Carbon\Carbon;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
-use App\Models\Holiday;
-use App\Models\Patient;
+use App\Models\Customer;
 use App\Models\patientRecord;
 use App\Models\Service;
 use App\Models\Staff;
@@ -14,13 +13,15 @@ use App\Notifications\AppointmentBooked;
 use Dotenv\Store\File\Paths;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Holiday\MalaysiaHoliday;
 class AppointmentController extends Controller
 {
    
 
    public function index(Request $request)
 {
-    $query = Appointment::with(['user', 'service', 'staff','patient']);
+    log::info($request);
+    $query = Appointment::with(['customer', 'service', 'staff','patientRecord']);
 
     if ($request->filled('user_id')) {
         $query->where('patient_id', $request->user_id);
@@ -38,32 +39,43 @@ class AppointmentController extends Controller
         $query->where('status', $request->status);
     }
       if ($request->filled('date')) {
-        $query->whereDate('date', $request->date);  // 👈 DATE filter
+        $query->whereDate('date', $request->date); 
     }
     if ($request->filled('appointment_id')) {
         $query->where('id', $request->appointment_id);
     }
 
     $appointments = $query->get();
-    $users = User::all();
     $services = Service::all();
-    $staff = Staff::all();
-    $unavailableDates = Holiday::pluck('date')->toArray(); 
-    return view('Staff.appointmentManagement', compact('appointments', 'users', 'services','staff','unavailableDates'));
+    $staff = Staff::with('user')->get();
+    $customer = Customer::with('user')->get();
+    log::info($staff);
+    //$unavailableDates = Holiday::pluck('date')->toArray(); 
+    return view('Staff.appointmentManagement', compact('appointments', 'customer', 'services','staff'));
 }
     /**
      * Show the form for creating a new resource.
      */
-    public function create($id)
-    {
-        $user = auth()->user();
-        $patient = Patient::where('user_id', $user->id)->first();
-        log::info($patient);
-        $services = Service::findOrFail($id);
-        $staff = Staff::all();
-        $unavailableDates = Holiday::pluck('date')->toArray(); 
-        return view('Customer.createbooking', compact('services','unavailableDates',"staff","patient"));
-    }
+       public function create($id)
+        {
+            $holidayPlugin = new MalaysiaHoliday;
+            $holidaysData = $holidayPlugin->fromState('Selangor')->get(); 
+
+            $holidays = [];
+            if (isset($holidaysData['data'][0]['collection'][0]['data'])) {
+                foreach ($holidaysData['data'][0]['collection'][0]['data'] as $item) {
+                    if (isset($item['is_holiday']) && $item['is_holiday'] === true) {
+                        $holidays[] = Carbon::parse($item['date'])->format('Y-m-d');
+                    }
+                }
+            }
+            Log::info('Holidays:', $holidays);
+            $user = auth()->user();
+            $patient = Customer::where('user_id', $user->id)->first();
+            $services = Service::findOrFail($id);
+            $staff = Staff::with("user")->get();
+            return view('Customer.createbooking', compact('services', 'holidays', 'staff', 'patient'));
+        }
 
     /**
      * Store a newly created resource in storage.
@@ -71,35 +83,32 @@ class AppointmentController extends Controller
     public function store(Request $request)
 {
     Log::info($request->all());
-   
-    $staff_id = $request->service_id == '6' ? 2 : $request->staff_id;
-
+    $staffid = null;
+    $studentid = null;
+    $staff_id = $request->service_id == '6' ? 3 : $request->staff_id;
+    if($request->patietnt_type == 'staff') {$staffid = $request->student_id;}
+    if($request->patietnt_type == 'student') {$studentid = $request->student_id;}
     DB::beginTransaction();
     try {
-        if (!Patient::where('user_id', $request->patient_id)->exists()){
-        Patient::create([
-            'patient_type' => $request->patient_type,
-            'contact_number' => $request->phone_number,
-            'age' => $request->age,
-            'name' => $request->patient_name,
-            'ic_number' => $request->ic_number,
-            'gender' => $request->gender,
-            'email' => $request->email,
-            'student_id' => $request->student_id,
-            'user_id'     => $request->patient_id,
-
+        if (!Customer::where('user_id', $request->patient_id)->exists()){
+        Customer::create([
+            'category' => $request->patient_type,
+            'phoneNumber' => $request->phone_number,
+            'ICNumber' => $request->ic_number,
+            'studentID' => $studentid,
+            'staffID' => $staffid,
+            'user_id'   => $request->patient_id,
+            'faculty' => $request->Faculty,
+            'program' => $request->Program,
         ]);
     }
-    $patientId = Patient::where('user_id', $request->patient_id)->first()->id;
-    log::info("patientId");
-    log::info($patientId);
+    $patientId = Customer::where('user_id', $request->patient_id)->first()->id;
         $appointment = Appointment::create([
             'staff_id'    => $staff_id,
             'date'        => $request->appointment_date,
             'time'        => $request->appointment_time,
             'status'      => 'upcoming',
             'service_id'  => $request->service_id,
-            'patient_id'  => $patientId,
         ]);
 
         log::info("lepas");
@@ -110,15 +119,14 @@ class AppointmentController extends Controller
         log::info($filePath);
 
        $record = PatientRecord::create([
-    'patient_id'      => $patientId,
-    'appointment_id'  => $appointment->id,
-    'visit_date'      => $request->appointment_date,
-    'notes'           => $request->notes,
-    'referral_letter' => $filePath,
+            'customer_id'      => $patientId,
+            'appointment_id'  => $appointment->id,
+            'notes'           => $request->notes,
+            'referral_letter' => $filePath,
 ]);
 
         DB::commit();
-
+    /*
         //email
         $user = User::find($request->patient_id);
         $staff = Staff::find($staff_id);
@@ -132,10 +140,10 @@ class AppointmentController extends Controller
     if ($staff) {
         $staff->notify($notification);
     }
-
+*/
         return redirect()->route('Customer.booking', $request->service_id)
                          ->with('success', 'Appointment booked successfully.');
-
+    
     } catch (\Exception $e) {
         DB::rollBack();
         Log::error('Error saving appointment or patient record: ' . $e->getMessage());
@@ -146,20 +154,20 @@ class AppointmentController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id, $appointmentId)
+ /*   public function show($id)
     {
-        log::info("sini");
-        log::info($id);
-        $patient = Patient::findOrFail($id);
-        $appointment = Appointment::with('service')->where('id', $appointmentId)->where('patient_id', $id)->firstOrFail();
-
-        return view('Staff.viewappointment', compact('patient', 'appointment'));
-    }
+        $patient = Customer::with('user')->findOrFail($id);
+        $patientrecord = PatientRecord::where('customer_id', $patient->id)->get();
+        $appointment = Appointment::where('id',$patientrecord->appointment_id);
+        $editable = $appointment->status === 'upcoming';
+        log::info($appointment);
+    return view('staff.appointment', compact('appointment', 'patientrecord', 'editable','appointment'));
+    }*/
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id, $appointmentId)
+   /* public function edit($id, $appointmentId)
 {
 
     $appointment = Appointment::with('patient', 'service')
@@ -169,60 +177,41 @@ class AppointmentController extends Controller
     $patientrecord = patientRecord::where('appointment_id', $appointmentId)->first();
      log::info($appointment);
     return view('Staff.viewappointment', compact('appointment','patientrecord'));
-}
+}*/
 
 
     /**
      * Update the specified resource in storage.
      */
    public function update(Request $request, $id)
-{
-    log::info($request);
-    $appointment = Appointment::findOrFail($id);
-    $patientrecord = PatientRecord::where('appointment_id', $id)->first();
-    $data = [];
-
-    if ($request->filled('date')) {
-        $data['date'] = $request->date;
-    }
-
-    if ($request->filled('time')) {
-        $data['time'] = $request->time;
-    }
-
-    if ($request->filled('status')) {
-        $data['status'] = $request->status;
-    }
-
-    if ($request->filled('service_id')) {
-        $data['service_id'] = $request->service_id;
-    }
-
-    $appointment->update($data);
-    if ($patientrecord) {
-        $patientRecordData = [];
-
-        if (isset($appointmentData['date'])) {
-            $patientRecordData['visit_date'] = $appointmentData['date'];
+    {
+        log::info($request);
+        $appointment = Appointment::findOrFail($id);
+        $data = [];
+        if ($request->filled('date')) {
+            $data['date'] = $request->date;
         }
 
-        if (isset($appointmentData['time'])) {
-            $patientRecordData['time'] = $appointmentData['time'];
+        if ($request->filled('time')) {
+            $data['time'] = $request->time;
         }
 
-        if (isset($appointmentData['status'])) {
-            $patientRecordData['status'] = $appointmentData['status'];
+        if ($request->filled('status')) {
+            $data['status'] = $request->status;
         }
 
-        if (isset($appointmentData['service_id'])) {
-            $patientRecordData['service_id'] = $appointmentData['service_id'];
-        }
+        $appointment->update($data);
 
-        $patientrecord->update($patientRecordData);
+        return redirect()->route('appoinmentmanagement')->with('success', 'Appointment updated successfully!');
     }
 
-    return redirect()->route('appoinmentmanagement')->with('success', 'Appointment updated successfully!');
-}
+  public function cancel(Appointment $appointment)
+    {
+        $appointment->status = 'cancelled';
+        $appointment->save();
+
+        return redirect()->back()->with('success', 'Appointment cancelled successfully.');
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -237,7 +226,7 @@ class AppointmentController extends Controller
         $date = $request->input('date');
 
         $allSlots = $this->generateTimeSlots();
-        $bookings = Appointment::where('date', $date)->where('status','upcoming')->get();
+        $bookings = Appointment::where('date', $date)->get();
 
         $bookedSlots = $bookings->pluck('time')->map(function ($time) {
         return \Carbon\Carbon::parse($time)->format('H:i');
@@ -249,6 +238,7 @@ class AppointmentController extends Controller
         return $group->pluck('staff_id')->values();
     });
         log::info($bookedSlots);
+        log::info("hi");
         log::info($bookedStaff);
         return response()->json([
             'allSlots' => $allSlots,
@@ -269,21 +259,26 @@ class AppointmentController extends Controller
         }
         return $slots;
     }
-    public function cancel(Appointment $appointment)
-    {
-        $appointment->status = 'cancelled';
-        $appointment->save();
-
-        return redirect()->back()->with('success', 'Appointment cancelled successfully.');
-    }
+  
     public function customerhistory(string $id){
         log::info($id);
-        $patient = Patient::where('user_id',$id)->first();
-        $appointment = Appointment::with('feedback')->where('patient_id', $patient->id)->get();
+        $patient = Customer::where('user_id',$id)->first();
+        $patientRecords = patientRecord::where('customer_id', $patient->id)->get();
+        $appointmentIds = $patientRecords->pluck('appointment_id'); // get all appointment IDs
+        $appointment = Appointment::with('feedback')->whereIn('id', $appointmentIds)->get();
         $services = Service::all();
-        $staff = Staff::all();
-        $patient = Patient::where('user_id',$id)->first();
-        $unavailableDates = Holiday::pluck('date')->toArray(); 
+        $staff = Staff::with("User")->get();
+        $holidayPlugin = new MalaysiaHoliday;
+            $holidaysData = $holidayPlugin->fromState('Selangor')->get(); 
+
+            $unavailableDates = [];
+            if (isset($holidaysData['data'][0]['collection'][0]['data'])) {
+                foreach ($holidaysData['data'][0]['collection'][0]['data'] as $item) {
+                    if (isset($item['is_holiday']) && $item['is_holiday'] === true) {
+                        $unavailableDates[] = Carbon::parse($item['date'])->format('Y-m-d');
+                    }
+                }
+            }
         return view('Customer.bookinghistory', compact('appointment','services','staff','patient','unavailableDates'));
     }
     

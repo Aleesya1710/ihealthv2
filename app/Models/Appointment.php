@@ -2,43 +2,43 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
+    use HasFactory;
+    protected $table = 'appointments';
     protected $fillable = [
-        'staff_id',
         'date',
         'time',
         'status',
         'service_id',
-        'patient_id',
+        'staff_id',
     ];
-     public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 
-    public function service()
+  public function customer()
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Customer::class, 'customer_id', 'id');
     }
 
     public function staff()
     {
-        return $this->belongsTo(Staff::class, 'staff_id'); 
+        return $this->belongsTo(Staff::class, 'staff_id', 'staffID');
     }
-    public function patientrecord(){
-        return $this->belongsTo(Service::class);
-    }
-    public function feedback()
-{
-    return $this->hasOne(Feedback::class);
-}
- public function patient()
-    {
-        return $this->belongsTo(Patient::class);
-    }
-  
 
+    public function service()
+    {
+        return $this->belongsTo(Service::class, 'service_id', 'id');
+    }
+
+    public function patientRecord()
+    {
+        return $this->hasOne(PatientRecord::class, 'appointment_id', 'id');
+    }
+
+    public function feedback()
+    {
+        return $this->hasOne(Feedback::class, 'appointment_id', 'id');
+    }
 }

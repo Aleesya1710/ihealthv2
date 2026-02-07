@@ -85,10 +85,6 @@
                class="block text-center py-2 w-full border-b border-black hover:bg-gray-200 hover:rounded-md text-sm font-medium ">
                 Appointment Management
             </a>
-            <a href="{{ route('holiday.index') }}" 
-               class="block text-center py-2 w-full border-b border-black hover:bg-gray-200 hover:rounded-md text-sm font-medium ">
-                Holiday Management
-            </a>
         </div>
     </div>
 

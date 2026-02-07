@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->date('date');
             $table->time('time');
-            $table->enum('status', ['upcoming', 'confirmed', 'cancelled','completed'])->default('upcoming');
-            $table->foreignId('service_id')->constrained('service')->onDelete('cascade');
-            $table->foreignId('staff_id')->constrained('staff')->onDelete('cascade');
-            $table->foreignId('patientRecord_id')->constrained('patientRecord')->onDelete('cascade');
+            $table->enum('status', ['upcoming', 'cancelled', 'completed'])->default('upcoming');
+            $table->foreignId('service_id')->constrained('services')->onDelete('restrict')->onUpdate('cascade');
+            $table->unsignedBigInteger('staff_id');
+            $table->foreign('staff_id')->references('staffID')->on('staffs')->onDelete('restrict')->onUpdate('cascade');
             $table->timestamps();
         });
     }

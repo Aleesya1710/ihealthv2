@@ -5,14 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Staff extends Model
+class Customer extends Model
 {
     use HasFactory;
-    protected $table = 'staffs';
-    protected $primaryKey = 'staffID';
+
     protected $fillable = [
-        'position',
+        'ICNumber',
+        'studentID',
         'faculty',
+        'phoneNumber',
+        'program',
+        'staffID',
+        'category',
         'user_id',
     ];
 
@@ -21,8 +25,13 @@ class Staff extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function patientRecords()
+    {
+        return $this->hasMany(PatientRecord::class);
+    }
+
     public function appointments()
     {
-        return $this->hasMany(Appointment::class, 'staff_id', 'staffID');
+        return $this->hasMany(Appointment::class);
     }
 }

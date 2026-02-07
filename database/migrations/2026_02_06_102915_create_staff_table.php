@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('publics', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('customer_id')->constrained()->onDelete('cascade');
+        Schema::create('staffs', function (Blueprint $table) {
+            $table->id('staffID');
+            $table->string('position')->nullable();
+            $table->string('faculty')->nullable();
+            $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
     }
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('public_users');
+        Schema::dropIfExists('staff');
     }
 };

@@ -91,7 +91,6 @@
     <h3>Medical Records</h3>
     <table style="width: 100%; border: 1px solid #ccc; border-collapse: collapse; margin-top: 10px;">
         <tr>
-            <!-- 📍 Image on the Left -->
             <td style="width: 200px; padding: 10px; vertical-align: top; border-right: 1px solid #ccc;">
                 <p><strong>Place of Injury:</strong></p>
                 @php
@@ -103,7 +102,6 @@
                 <img src="{{ $imagePath }}" alt="Body Image" style="width: 100%; max-width: 200px;">
             </td>
 
-            <!-- 🗒️ Details on the Right -->
             <td style="padding: 10px; vertical-align: top;">
                 <p><strong>Reason of Visit:</strong></p>
                 <ul style="margin-left: 15px;">

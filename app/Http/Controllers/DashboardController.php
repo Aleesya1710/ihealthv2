@@ -23,7 +23,7 @@ class DashboardController extends Controller
         $endOfMonth = Carbon::now()->endOfMonth();
 
         $totalAppointmentsToday = Appointment::whereDate('date', $today)->count();
-        $AppointmentsToday = Appointment::with('service','staff','user.patient')->whereDate('date', $today)->orderBy('time', 'asc')->get();
+        $AppointmentsToday = Appointment::with('patientRecord','service','staff','customer')->whereDate('date', '2026-02-09')->orderBy('time', 'asc')->get();
         $totalPatients = Customer::count();
         $CancelledAppointment = Appointment::where('status','cancelled')->count();
         $UpcomingAppointment = Appointment::where('status','upcoming')->count();

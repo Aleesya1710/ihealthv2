@@ -7,7 +7,6 @@
 
         <title>{{ config('app.name', 'IHealthPortal') }}</title>
 
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -16,7 +15,6 @@
 
 
 
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
@@ -28,8 +26,10 @@
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-[#353D3F]">
 
-            <!-- Page Content -->
             <main>
+                <div class="px-4 pt-4">
+                    @include('partials.notifications')
+                </div>
                 {{ $slot }}
             </main>
         </div>

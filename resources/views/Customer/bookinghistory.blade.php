@@ -31,12 +31,12 @@
         <div class="max-w-7xl mx-auto px-4 py-8">
             <div class="max-w-7xl mx-auto bg-white py-8 px-5 mt-4 rounded-lg">
                 <h2 class="text-2xl font-bold mb-6 text-gray-800">
-                    Booking History
+                    Appointment History
                 </h2>
 
                 @if($appointment->isEmpty())
                     <div class="bg-yellow-100 text-yellow-800 px-4 py-3 rounded">
-                        You have no booking history yet.
+                        You have no Appointment yet.
                     </div>
                 @else
                     <div class="overflow-x-auto">
@@ -59,7 +59,7 @@
                                         <td class="py-3 px-4 border-b">{{ $services->firstWhere('id', $a->service_id)?->name ?? 'N/A' }}</td>
                                         <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($a->date)->format('d M Y') }}</td>
                                         <td class="py-3 px-4 border-b">{{ \Carbon\Carbon::parse($a->time)->format('h:i A') }}</td>
-                                        <td class="py-3 px-4 border-b">
+                                        <td class="py-3 px-4 border-b align-middle">
                                             {{ $a->staff_id ? ($staff->firstWhere('staffID', $a->staff_id)?->user->name ?? 'Unavailable') : 'Pending Assignment' }}
                                         </td>
                                         <td class="py-3 px-4 border-b">
@@ -72,27 +72,116 @@
                                         </td>
                                         <td class="py-3 px-4 border-b">
                                             @if ($a->status === 'upcoming')
-                                                <div class="flex gap-1">
-                                                    <button 
-                                                        @click="openModal({{ $a->id }}, '{{ $a->date }}', '{{ \Carbon\Carbon::parse($a->time)->format('H:i') }}', {{ $a->staff_id }})" 
-                                                        class="text-yellow-600 hover:text-yellow-800 text-sm flex items-center gap-1"
+                                      <div class="flex items-center gap-2 leading-none">
+                                            <button
+                                                @click="openModal({{ $a->id }}, '{{ $a->date }}', '{{ \Carbon\Carbon::parse($a->time)->format('H:i') }}', {{ $a->staff_id ?? 'null' }})"
+                                                class="inline-flex items-center justify-center text-yellow-600 hover:text-yellow-800 leading-none"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5l3 3L14 13H11v-3l7.5-7.5z" />
+                                                </svg>
+                                            </button>
+                                            <form method="POST" action="/appointment/{{ $a->id }}/cancel" onsubmit="return confirm('Are you sure?')" class="inline-flex items-center m-0">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="inline-flex items-center justify-center text-red-600 hover:text-red-800 leading-none">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block align-middle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                            @elseif ($a->status === 'completed')
+                                                <div x-data="{ showFeedback: false, rating: {{ $a->feedback->rating ?? 0 }} }" class="space-y-2">
+                                                    <button
+                                                        @click="showFeedback = !showFeedback"
+                                                        class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
                                                     >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5l3 3L14 13H11v-3l7.5-7.5z" />
-                                                        </svg>
-                                                    </button>
-                                                    <form method="POST" action="/appointment/{{ $a->id }}/cancel" onsubmit="return confirm('Are you sure?')">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" class="text-red-600 hover:text-red-800">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="mt-4 h-5 w-5" fill="none"
-                                                            viewBox="0 0 24 24" stroke="currentColor">
+                                                        @if ($a->feedback)
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                                    d="M6 18L18 6M6 6l12 12" />
+                                                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 00-1.175 0l-3.385 2.46c-.784.57-1.838-.197-1.539-1.118l1.285-3.974a1 1 0 00-.364-1.118L2.047 9.4c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.285-3.974z" />
                                                             </svg>
-                                                        </button>
-                                                    </form>
+                                                        @else
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 00-1.175 0l-3.385 2.46c-.784.57-1.838-.197-1.539-1.118l1.285-3.974a1 1 0 00-.364-1.118L2.047 9.4c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.285-3.974z" />
+                                                            </svg>
+                                                        @endif
+                                                    </button>
+
+                                                    <div x-show="showFeedback" x-transition class="space-y-2 text-sm">
+                                                        @if ($a->feedback)
+                                                            <div class="flex space-x-1">
+                                                                @for ($i = 1; $i <= 5; $i++)
+                                                                    <svg
+                                                                        class="h-6 w-6 {{ $i <= $a->feedback->rating ? 'text-yellow-400' : 'text-gray-300' }}"
+                                                                        fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 00-1.175 0l-3.385 2.46c-.784.57-1.838-.197-1.539-1.118l1.285-3.974a1 1 0 00-.364-1.118L2.047 9.4c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.285-3.974z" />
+                                                                    </svg>
+                                                                @endfor
+                                                            </div>
+                                                            <div class="border border-gray-300 rounded p-2 bg-gray-50">
+                                                                <p class="text-gray-700">{{ $a->feedback->message }}</p>
+                                                            </div>
+                                                        @else
+                                                            <form method="POST"
+                                                            action="{{ route('createfeedback') }}"
+                                                            class="space-y-2 text-sm"
+                                                            x-data="{ rating: 0, error: false }"
+                                                            @submit.prevent="
+                                                                if (rating === 0) {
+                                                                    error = true;
+                                                                } else {
+                                                                    error = false;
+                                                                    $el.submit();
+                                                                }
+                                                            ">
+                                                            @csrf
+
+                                                            <input type="hidden" name="user_id" value="{{ $a->patient_id }}">
+                                                            <input type="hidden" name="appointment_id" value="{{ $a->id }}">
+                                                            <input type="hidden" name="rating" :value="rating">
+
+                                                            <div>
+                                                                <div class="flex space-x-1">
+                                                                    <template x-for="i in 5" :key="i">
+                                                                        <svg
+                                                                            @click="rating = i; error = false"
+                                                                            :class="i <= rating ? 'text-yellow-400' : 'text-gray-300'"
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            class="h-6 w-6 cursor-pointer transition-colors duration-200"
+                                                                            fill="currentColor"
+                                                                            viewBox="0 0 20 20">
+                                                                            <path
+                                                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 00-.364 1.118l1.286 3.974c.3.921-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 00-1.175 0l-3.385 2.46c-.784.57-1.838-.197-1.539-1.118l1.285-3.974a1 1 0 00-.364-1.118L2.047 9.4c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.285-3.974z"/>
+                                                                        </svg>
+                                                                    </template>
+                                                                </div>
+
+                                                                <p x-show="error"
+                                                                x-transition
+                                                                class="text-red-500 text-xs mt-1">
+                                                                    Please select a rating ⭐
+                                                                </p>
+                                                            </div>
+
+                                                            <textarea required
+                                                                    name="feedback"
+                                                                    rows="3"
+                                                                    class="w-full border border-gray-300 rounded p-2 focus:ring focus:ring-blue-200"
+                                                                    placeholder="Write your feedback..."></textarea>
+
+                                                            <button type="submit"
+                                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">
+                                                                Submit
+                                                            </button>
+                                                        </form>
+
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             @endif
                                         </td>
@@ -105,7 +194,6 @@
             </div>
         </div>
 
-        <!-- Reschedule Modal -->
         <div x-show="show" x-cloak class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div class="bg-white w-[90%] max-w-4xl p-6 rounded-lg relative shadow-xl overflow-y-auto max-h-[90vh]">
                 <button @click="show = false" class="absolute top-2 right-4 text-gray-500 text-xl">&times;</button>
@@ -129,26 +217,7 @@
                                 <div id="slot-container" class="flex flex-wrap gap-3 justify-center"></div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h3 class="font-semibold text-xl">Instructor</h3>
-                        <div class="grid grid-cols-2 gap-4" id="instructor-container">
-                            @foreach ($staff as $s)
-                                @if($s->position == "Instructor")
-                                    <label class="cursor-pointer h-60 rounded-lg shadow hover:shadow-lg border transition-all duration-200 instructor-card">
-                                        <input type="radio" value="{{ $s->staffID }}" class="hidden peer instructor-radio" x-model="selectedStaff">
-                                        <div class="flex flex-col items-center peer-checked:text-white peer-checked:bg-blue-500 peer-checked:border-blue-400 peer-checked:ring-2 peer-checked:ring-blue-300 rounded-lg p-4 h-full">
-                                            <img src="{{ asset('image/logo.jpg') }}" alt="" class="h-20 mb-4">
-                                            <h3 class="text-lg font-semibold mt-7">{{ $s->user->name }}</h3>
-                                            <p class="text-sm peer-checked:text-gray-200 text-gray-600">{{ $s->position ?? 'Instructor' }}</p>
-                                        </div>
-                                    </label>
-                                @endif
-                            @endforeach
-                        </div>
-                    </div>
-
+                    </div>          
                     <div class="text-right mt-6">
                         <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Reschedule</button>
                     </div>
@@ -160,7 +229,6 @@
 <script src="//unpkg.com/alpinejs" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-// Store Alpine component reference globally
 let rescheduleComponent = null;
 
 function rescheduleModal() {
@@ -173,10 +241,8 @@ function rescheduleModal() {
         bookedStaff: {},
 
         init() {
-            // Store reference to this component
             rescheduleComponent = this;
             
-            // Add event listener for instructor selection
             this.$nextTick(() => {
                 this.setupInstructorListeners();
             });
@@ -185,12 +251,10 @@ function rescheduleModal() {
         setupInstructorListeners() {
             document.querySelectorAll(".instructor-radio").forEach(input => {
                 input.addEventListener("change", function() {
-                    // Reset all instructor cards to default state
                     document.querySelectorAll(".instructor-radio").forEach(radio => {
                         const card = radio.closest("label").querySelector("div");
                         card.classList.remove("bg-blue-500", "text-white", "border-blue-400", "ring-2", "ring-blue-300");
                         
-                        // Reset text colors
                         const name = card.querySelector("h3");
                         const position = card.querySelector("p");
                         if (name) name.classList.remove("text-white");
@@ -200,12 +264,10 @@ function rescheduleModal() {
                         }
                     });
 
-                    // Highlight selected instructor card
                     if (this.checked) {
                         const selectedCard = this.closest("label").querySelector("div");
                         selectedCard.classList.add("bg-blue-500", "text-white", "border-blue-400", "ring-2", "ring-blue-300");
                         
-                        // Update text colors for selected card
                         const name = selectedCard.querySelector("h3");
                         const position = selectedCard.querySelector("p");
                         if (name) name.classList.add("text-white");
@@ -235,7 +297,6 @@ function rescheduleModal() {
                 this.fetchSlots(date);
                 this.setupInstructorListeners();
                 
-                // Highlight pre-selected instructor
                 setTimeout(() => {
                     this.highlightSelectedInstructor(staffId);
                 }, 100);
@@ -265,10 +326,9 @@ function rescheduleModal() {
                 .then(data => {
                     console.log("Raw bookedStaff data:", data.bookedStaff);
                     
-                    // Normalize bookedStaff keys to HH:mm format
                     this.bookedStaff = {};
                     for (let key in data.bookedStaff) {
-                        let normalizedKey = key.slice(0, 5); // "13:00"
+                        let normalizedKey = key.slice(0, 5); 
                         this.bookedStaff[normalizedKey] = data.bookedStaff[key];
                     }
                     
@@ -283,7 +343,6 @@ function rescheduleModal() {
     container.innerHTML = "";
 
     slots.forEach(slot => {
-        // Normalize slot to HH:mm format
         const normalizedSlot = slot.slice(0, 5);
         const staffBooked = this.bookedStaff[normalizedSlot] || [];
         const isFullyBooked = staffBooked.length >= 2;
@@ -298,7 +357,6 @@ function rescheduleModal() {
             ? "bg-gray-400 text-white px-14 py-2 rounded-lg cursor-not-allowed"
             : "bg-transparent text-black px-14 py-2 rounded-lg border hover:bg-gray-300";
 
-        // Pre-select the current time slot - check both normalized and original
         const normalizedSelectedTime = this.selectedTime ? this.selectedTime.slice(0, 5) : null;
         if (normalizedSlot === normalizedSelectedTime || slot === this.selectedTime || normalizedSlot === this.selectedTime) {
             btn.classList.remove("bg-transparent", "text-black", "border", "hover:bg-gray-300");
@@ -312,13 +370,11 @@ function rescheduleModal() {
             document.getElementById('reschedule_time').value = normalizedSlot;
             document.getElementById('reschedule_date').value = this.selectedDate;
 
-            // Reset all buttons to default state
             container.querySelectorAll("button").forEach(b => {
                 b.classList.remove("bg-blue-500", "text-white");
                 b.classList.add("bg-transparent", "text-black", "border");
             });
             
-            // Highlight selected button
             btn.classList.remove("bg-transparent", "text-black", "border");
             btn.classList.add("bg-blue-500", "text-white");
 
@@ -328,7 +384,6 @@ function rescheduleModal() {
         container.appendChild(btn);
     });
 
-    // Update instructor options for pre-selected time
     if (this.selectedTime) {
         const normalizedSelectedTime = this.selectedTime.slice(0, 5);
         if (this.bookedStaff[normalizedSelectedTime]) {
@@ -367,7 +422,6 @@ document.addEventListener('DOMContentLoaded', function(){
         minDate: "today",
         appendTo: document.getElementById("calendar-container"),
         onChange: function(selectedDates, dateStr) {
-            // Use the global reference to the Alpine component
             if (rescheduleComponent) {
                 rescheduleComponent.selectedDate = dateStr;
                 rescheduleComponent.selectedTime = null;

@@ -18,7 +18,7 @@ class AppointmentController extends Controller
 {
    
 
-   public function index(Request $request)
+public function index(Request $request)
 {
     log::info($request);
     $query = Appointment::with(['customer', 'service', 'staff','patientRecord']);
@@ -45,17 +45,31 @@ class AppointmentController extends Controller
         $query->where('id', $request->appointment_id);
     }
 
-    $appointments = $query->get();
+    $appointments = $query
+        ->orderByRaw("CASE status WHEN 'upcoming' THEN 1 WHEN 'completed' THEN 2 WHEN 'cancelled' THEN 3 ELSE 4 END")
+        ->orderBy('date', 'asc')
+        ->orderBy('time', 'asc')
+        ->get();
     $services = Service::all();
     $staff = Staff::with('user')->get();
     $customer = Customer::with('user')->get();
     log::info($staff);
-    //$unavailableDates = Holiday::pluck('date')->toArray(); 
-    return view('Staff.appointmentManagement', compact('appointments', 'customer', 'services','staff'));
+    $holidayPlugin = new MalaysiaHoliday;
+    $holidaysData = $holidayPlugin->fromState('Selangor')->get();
+    $unavailableDates = [];
+    if (isset($holidaysData['data'][0]['collection'][0]['data'])) {
+        foreach ($holidaysData['data'][0]['collection'][0]['data'] as $item) {
+            if (isset($item['is_holiday']) && $item['is_holiday'] === true) {
+                $unavailableDates[] = Carbon::parse($item['date'])->format('Y-m-d');
+            }
+        }
+    }
+    if ($request->ajax()) {
+        return view('Staff.partials.appointment_table_rows', compact('appointments'));
+    }
+
+    return view('Staff.appointmentManagement', compact('appointments', 'customer', 'services','staff','unavailableDates'));
 }
-    /**
-     * Show the form for creating a new resource.
-     */
        public function create($id)
         {
             $holidayPlugin = new MalaysiaHoliday;
@@ -77,9 +91,6 @@ class AppointmentController extends Controller
             return view('Customer.createbooking', compact('services', 'holidays', 'staff', 'patient'));
         }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
 {
     Log::info($request->all());
@@ -126,21 +137,20 @@ class AppointmentController extends Controller
 ]);
 
         DB::commit();
-    /*
-        //email
-        $user = User::find($request->patient_id);
-        $staff = Staff::find($staff_id);
+        $appointment->load(['service', 'staff.user', 'patientRecord.customer.user']);
+        try {
+            $customerUser = User::find($request->patient_id);
+            if ($customerUser) {
+                $customerUser->notify(new AppointmentBooked($appointment, 'customer'));
+            }
 
-        $notification = new AppointmentBooked($appointment);
-
-    if ($user) {
-        $user->notify($notification);
-    }
-
-    if ($staff) {
-        $staff->notify($notification);
-    }
-*/
+            $staffUser = Staff::with('user')->where('staffID', $staff_id)->first()?->user;
+            if ($staffUser) {
+                $staffUser->notify(new AppointmentBooked($appointment, 'staff'));
+            }
+        } catch (\Exception $e) {
+            Log::error('Error sending appointment notifications: ' . $e->getMessage());
+        }
         return redirect()->route('Customer.booking', $request->service_id)
                          ->with('success', 'Appointment booked successfully.');
     
@@ -151,38 +161,9 @@ class AppointmentController extends Controller
     }
 }
 
-    /**
-     * Display the specified resource.
-     */
- /*   public function show($id)
-    {
-        $patient = Customer::with('user')->findOrFail($id);
-        $patientrecord = PatientRecord::where('customer_id', $patient->id)->get();
-        $appointment = Appointment::where('id',$patientrecord->appointment_id);
-        $editable = $appointment->status === 'upcoming';
-        log::info($appointment);
-    return view('staff.appointment', compact('appointment', 'patientrecord', 'editable','appointment'));
-    }*/
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-   /* public function edit($id, $appointmentId)
-{
-
-    $appointment = Appointment::with('patient', 'service')
-        ->where('id', $appointmentId)
-        ->where('patient_id', $id)
-        ->firstOrFail();
-    $patientrecord = patientRecord::where('appointment_id', $appointmentId)->first();
-     log::info($appointment);
-    return view('Staff.viewappointment', compact('appointment','patientrecord'));
-}*/
 
 
-    /**
-     * Update the specified resource in storage.
-     */
+
    public function update(Request $request, $id)
     {
         log::info($request);
@@ -213,12 +194,8 @@ class AppointmentController extends Controller
         return redirect()->back()->with('success', 'Appointment cancelled successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Appointment $appointment)
     {
-        //
     }
 
     public function getSlots(Request $request)
@@ -261,46 +238,54 @@ class AppointmentController extends Controller
     }
   
     public function customerhistory(string $id){
-        log::info($id);
-        $patient = Customer::where('user_id',$id)->first();
-        $patientRecords = patientRecord::where('customer_id', $patient->id)->get();
-        $appointmentIds = $patientRecords->pluck('appointment_id'); // get all appointment IDs
-        $appointment = Appointment::with('feedback')->whereIn('id', $appointmentIds)->get();
+    Log::info($id);
+    $patient = Customer::where('user_id', $id)->first();
+    if (!$patient) {
         $services = Service::all();
         $staff = Staff::with("User")->get();
         $holidayPlugin = new MalaysiaHoliday;
-            $holidaysData = $holidayPlugin->fromState('Selangor')->get(); 
-
-            $unavailableDates = [];
-            if (isset($holidaysData['data'][0]['collection'][0]['data'])) {
-                foreach ($holidaysData['data'][0]['collection'][0]['data'] as $item) {
-                    if (isset($item['is_holiday']) && $item['is_holiday'] === true) {
-                        $unavailableDates[] = Carbon::parse($item['date'])->format('Y-m-d');
-                    }
+        $holidaysData = $holidayPlugin->fromState('Selangor')->get(); 
+        $unavailableDates = [];
+        if (isset($holidaysData['data'][0]['collection'][0]['data'])) {
+            foreach ($holidaysData['data'][0]['collection'][0]['data'] as $item) {
+                if (isset($item['is_holiday']) && $item['is_holiday'] === true) {
+                    $unavailableDates[] = Carbon::parse($item['date'])->format('Y-m-d');
                 }
             }
-        return view('Customer.bookinghistory', compact('appointment','services','staff','patient','unavailableDates'));
+        }
+        return view('Customer.bookinghistory', ['appointment' => collect([]),'services' => $services,'staff' => $staff,'patient' => null,'unavailableDates' => $unavailableDates
+        ]);
     }
-    
-    
- public function rescheduleForm(string $id)
-{
-    $appointment = Appointment::findOrFail($id);
-    $staff = Staff::all();
-    $patient = Patient::where('patient_id',$appointment->patient_id)->get();
-    $unavailableDates = Holiday::pluck('date')->toArray(); 
-   return view('Customer.rescheduleform', compact('appointment','staff','patient','unavailableDates'));
-
+    $patientRecords = patientRecord::where('customer_id', $patient->id)->get();
+    $appointmentIds = $patientRecords->pluck('appointment_id'); 
+    $appointment = Appointment::with('feedback')->whereIn('id', $appointmentIds)->orderBy('date', 'desc')->get();
+    $services = Service::all();
+    $staff = Staff::with("User")->get();
+    $holidayPlugin = new MalaysiaHoliday;
+    $holidaysData = $holidayPlugin->fromState('Selangor')->get(); 
+    $unavailableDates = [];
+    if (isset($holidaysData['data'][0]['collection'][0]['data'])) {
+        foreach ($holidaysData['data'][0]['collection'][0]['data'] as $item) {
+            if (isset($item['is_holiday']) && $item['is_holiday'] === true) {
+                $unavailableDates[] = Carbon::parse($item['date'])->format('Y-m-d');
+            }
+        }
+    }
+    return view('Customer.bookinghistory', compact('appointment', 'services', 'staff', 'patient', 'unavailableDates'));
 }
+    
+
 public function reschedule(Request $request,string $id)
 {
     log::info($id);
     log::info($request);
 
     $appointment = Appointment::find($id);
-    $appointment->date = $request->date;
-    $appointment->time = $request->time;
-    $appointment->staff_id = $request->staff_id;
+    $appointment->date = $request->appointment_date;
+    $appointment->time = $request->appointment_time;
+    if ($request->filled('status') && in_array($request->status, ['upcoming', 'completed'], true)) {
+        $appointment->status = $request->status;
+    }
     $appointment->save();
     log::info($appointment->save());
     return redirect()->back()->with('success', 'Appointment rescheduled successfully!');

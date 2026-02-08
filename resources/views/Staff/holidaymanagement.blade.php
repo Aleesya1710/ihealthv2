@@ -2,11 +2,9 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto mt-10" x-data="holidayCalendar()" x-init="$nextTick(() => init())">
-    <!-- Calendar -->
     <div id="calendar" class="rounded-lg border border-white shadow-sm p-4 "></div>
 
 
-    <!-- Modal -->
     <div 
         x-show="showModal" 
         x-transition
@@ -16,7 +14,6 @@
         <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative z-50">
             <h2 class="text-xl font-bold mb-4">Manage Holiday - <span x-text="form.date"></span></h2>
 
-            <!-- Existing Holiday View -->
             <template x-if="form.exists && !editing">
                 <div class="mb-4">
                     <label class="block mb-1 font-semibold">Existing Holiday Reason:</label>
@@ -35,7 +32,6 @@
                 </div>
             </template>
 
-            <!-- Add/Edit Form -->
             <template x-if="!form.exists || editing">
                 <form @submit.prevent="form.exists ? updateHoliday() : submitForm()">
                     <div class="mb-4">

@@ -17,9 +17,6 @@ use Illuminate\Support\Facades\View;
 
 class PatientRecordController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
    public function index(Request $request)
 {
     $keyword = $request->input('keyword');
@@ -41,30 +38,21 @@ class PatientRecordController extends Controller
     }
 
     $patientrecord = $query->get(); 
-    //log::info($query);
     log::info($patientrecord);
+    if ($request->ajax()) {
+        return view('Staff.partials.patient_table_rows', compact('patientrecord'));
+    }
     return view('Staff.patientmanagement', compact('patientrecord'));
 }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
 {
     $patient = Customer::where('user_id', $id)->firstOrFail();
@@ -80,15 +68,11 @@ class PatientRecordController extends Controller
     );
 }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
   public function edit(string $id)
 {
     $patient = Customer::with('user')->findOrFail($id);
     $patientrecord = PatientRecord::where('customer_id', $patient->id)->get();
     $appointmentIds = $patientrecord->pluck('appointment_id');
-    //$appointments = Appointment::whereIn('id', $appointmentIds)->get();
     $selectedReasons = $patientrecord->flatMap(fn($r) => is_string($r->diagnosis) ? json_decode($r->diagnosis, true) ?? [] : ($r->diagnosis ?? []))->unique()->toArray();
     $selectedInjuries = $patientrecord->flatMap(fn($r) => is_string($r->type_of_injury) ? json_decode($r->type_of_injury, true) ?? [] : ($r->type_of_injury ?? []))->unique()->toArray();
 
@@ -99,9 +83,6 @@ class PatientRecordController extends Controller
 }
 
 
-    /**
-     * Update the specified resource in storage.
-     */
   public function update(Request $request, string $customerId, string $appid)
 {
     $customer = Customer::with('user')->findOrFail($customerId);
@@ -134,43 +115,11 @@ class PatientRecordController extends Controller
     return $this->show($customer->user->id)->with('success', 'Treatment updated successfully.');
 }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         Patient::destroy($id);
         return view('Staff.patientmanagement');
 
     }
-    public function reportPreview($id) //nanti letak dekat reportController and just panggil je start 132
-    {
-        $patient = Patient::findOrFail($id);
-        $appointments = Appointment::where('patient_id', $id)->with('service')->get();
-        $patientrecord = PatientRecord::where('patient_id', $id)->get();
-        $painLocation = $patient->place_of_injury;
-        $isPDF = false;
-        Browsershot::html(View::make('report.body_image', ['painLocation' => $painLocation])->render())
-        ->windowSize(400, 600)
-        ->setOption('args', ['--no-sandbox'])
-        ->save(public_path('image/body_image.png'));
-        return view('report.report-preview', compact('patient', 'appointments', 'patientrecord','isPDF'));
-    }
-
-    public function generatePdf($id) // just panggil dri reportController (samefunction as atas)
-   {
-        $patient = Patient::findOrFail($id);
-        $appointments = Appointment::where('patient_id', $id)->with('service')->get();
-        $patientrecord = PatientRecord::where('patient_id', $id)->get();
-        $painLocation = $patient->place_of_injury;
-        $isPDF = true;
-        Browsershot::html(View::make('report.body_image', ['painLocation' => $painLocation])->render())
-        ->windowSize(400, 600)
-        ->setOption('args', ['--no-sandbox'])
-        ->save(public_path('image/body_image.png'));
-        $pdf = Pdf::loadView('report.patient_report', compact('patient', 'appointments', 'patientrecord','isPDF'));
-
-    return $pdf->download('patient_report_'.$patient->name.'.pdf');
-}
 }
 

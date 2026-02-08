@@ -8,11 +8,9 @@
         <title>IHealthPortal</title>
         
 
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
-       <!-- Scripts -->
        @vite(['resources/css/app.css', 'resources/js/app.js'])
        <script src="//unpkg.com/alpinejs" defer></script>
 
@@ -115,7 +113,6 @@ We offer the most affordable wellness and rehabilitation services specially cate
                 </div>
             </template>
             
-            <!-- Dots -->
             <div class=" mt-28 flex justify-center space-x-3">
                 <template x-for="(item, index) in feedbacks" :key="'dot-' + index">
                     <div :class="activeSlide === index ? 'bg-[#10859F]' : 'bg-gray-400'" 
@@ -131,7 +128,6 @@ We offer the most affordable wellness and rehabilitation services specially cate
     
         <div class="flex flex-col lg:flex-row gap-8 items-center justify-between w-full max-w-7xl mx-auto">
             
-            <!-- Google Map -->
             <section class="w-full lg:w-1/2 rounded-xl overflow-hidden shadow-lg border border-gray-300">
                 <iframe 
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7968.1932510897195!2d101.49707194999999!3d3.06884765!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31cc52f50f0d8f51%3A0x1839b92afc81adc1!2sSports%20%26%20Wellness%20Clinic%20FSR!5e0!3m2!1sen!2smy!4v1752405215949!5m2!1sen!2smy" 
@@ -144,16 +140,13 @@ We offer the most affordable wellness and rehabilitation services specially cate
                 </iframe>
             </section>
     
-            <!-- Info Section -->
             <section class="w-full lg:w-1/2 text-[#1b1b18]">
                 <div class="grid gap-6">
-                    <!-- About -->
                     <div>
                         <h3 class="text-xl font-bold mb-2">Business Information</h3>
                         <p>Sports Injuries Rehabilitation & Sports Massage</p>
                     </div>
     
-                    <!-- Contact -->
                     <div>
                         <h3 class="text-xl font-bold mb-2">Contact Us</h3>
                         <ul class="space-y-1">
@@ -166,7 +159,6 @@ We offer the most affordable wellness and rehabilitation services specially cate
                         </ul>
                     </div>
     
-                    <!-- Good to Know -->
                     <div>
                         <h3 class="text-xl font-bold mb-2">Good to Know</h3>
                         <ul class="space-y-1">

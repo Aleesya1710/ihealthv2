@@ -19,74 +19,130 @@
 
         <div>
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+            <x-text-input
+                id="name"
+                name="name"
+                type="text"
+                class="mt-1 block w-full"
+                :value="old('name', $user->name)"
+                required
+                autofocus
+            />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
+            <x-text-input
+                id="email"
+                name="email"
+                type="email"
+                class="mt-1 block w-full"
+                :value="old('email', $user->email)"
+                required
+            />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
-
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800 ">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900  rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
-
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600 ">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
-                </div>
-            @endif
         </div>
-         <div>
+
+        <div>
             <x-input-label for="patient_type" :value="__('Patient Type')" />
-            <select id="patient_type" name="patient_type" class="mt-1 block w-full" onchange="toggleStudentId()">
+            <select
+                id="patient_type"
+                name="patient_type"
+                class="mt-1 block w-full"
+                onchange="toggleCategoryFields()"
+            >
                 <option value="">-- Select Type --</option>
-                <option value="Student" {{ old('patient_type', $patient->patient_type) == 'Student' ? 'selected' : '' }}>Student</option>
-                <option value="Staff" {{ old('patient_type', $patient->patient_type) == 'Staff' ? 'selected' : '' }}>Staff</option>
-                <option value="Public" {{ old('patient_type', $patient->patient_type) == 'Public' ? 'selected' : '' }}>Public</option>
+                <option value="student" {{ old('patient_type', optional($user->customer)->category) === 'student' ? 'selected' : '' }}>Student</option>
+                <option value="staff" {{ old('patient_type', optional($user->customer)->category) === 'staff' ? 'selected' : '' }}>Staff</option>
+                <option value="public" {{ old('patient_type', optional($user->customer)->category) === 'public' ? 'selected' : '' }}>Public</option>
             </select>
             <x-input-error class="mt-2" :messages="$errors->get('patient_type')" />
         </div>
 
-         <div>
-            <x-input-label for="contact_number" :value="__('Contact Number')" />
-            <x-text-input id="contact_number" name="contact_number" type="text" class="mt-1 block w-full" :value="old('contact_number', $patient->contact_number)" required autofocus autocomplete="contact_number" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
-        </div>
-         <div>
-            <x-input-label for="age" :value="__('Age')" />
-            <x-text-input id="age" name="age" type="text" class="mt-1 block w-full" :value="old('age', $patient->age)" required autofocus autocomplete="age" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
-        </div>
-         <div>
-            <x-input-label for="ic_number" :value="__('Ic Number')" />
-            <x-text-input id="ic_number" name="ic_number" type="text" class="mt-1 block w-full" :value="old('ic_number', $patient->ic_number)" required autofocus autocomplete="ic_number" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
-        </div>
         <div>
-            <x-input-label for="gender" :value="__('Gender')" />
-            <select id="gender" name="gender" class="mt-1 block w-full">
-                <option value="Male" {{ old('gender', $patient->gender) == 'Male' ? 'selected' : '' }}>Male</option>
-                <option value="Female" {{ old('gender', $patient->gender) == 'Female' ? 'selected' : '' }}>Female</option>
-            </select>
-            <x-input-error class="mt-2" :messages="$errors->get('gender')" />
+            <x-input-label for="contact_number" :value="__('Contact Number')" />
+            <x-text-input
+                id="contact_number"
+                name="contact_number"
+                type="text"
+                class="mt-1 block w-full"
+                :value="old('contact_number', optional($user->customer)->phoneNumber)"
+            />
+            <x-input-error class="mt-2" :messages="$errors->get('contact_number')" />
         </div>
-        <div id="student_id_container">
+
+        <div>
+            <x-input-label for="ic_number" :value="__('IC Number')" />
+            <x-text-input
+                id="ic_number"
+                name="ic_number"
+                type="text"
+                class="mt-1 block w-full"
+                :value="old('ic_number', optional($user->customer)->ICNumber)"
+            />
+            <x-input-error class="mt-2" :messages="$errors->get('ic_number')" />
+        </div>
+
+        <div
+            id="student_id_container"
+            style="display: {{ old('patient_type', optional($user->customer)->category) === 'student' ? 'block' : 'none' }};"
+        >
             <x-input-label for="student_id" :value="__('Student ID')" />
-            <x-text-input id="student_id" name="student_id" type="text" class="mt-1 block w-full"
-                :value="old('student_id', $patient->student_id)" autocomplete="student_id" />
+            <x-text-input
+                id="student_id"
+                name="student_id"
+                type="text"
+                class="mt-1 block w-full"
+                :value="old('student_id', optional($user->customer)->studentID)"
+            />
             <x-input-error class="mt-2" :messages="$errors->get('student_id')" />
         </div>
 
+        <div
+            id="staff_id_container"
+            style="display: {{ old('patient_type', optional($user->customer)->category) === 'staff' ? 'block' : 'none' }};"
+        >
+            <x-input-label for="staff_id" :value="__('Staff ID')" />
+            <x-text-input
+                id="staff_id"
+                name="staff_id"
+                type="text"
+                class="mt-1 block w-full"
+                :value="old('staff_id', optional($user->customer)->staffID)"
+            />
+            <x-input-error class="mt-2" :messages="$errors->get('staff_id')" />
+        </div>
+
+        <div
+            id="faculty_container"
+            style="display: {{ in_array(old('patient_type', optional($user->customer)->category), ['student','staff']) ? 'block' : 'none' }};"
+        >
+            <x-input-label for="faculty" :value="__('Faculty')" />
+            <x-text-input
+                id="faculty"
+                name="faculty"
+                type="text"
+                class="mt-1 block w-full"
+                :value="old('faculty', optional($user->customer)->faculty)"
+            />
+            <x-input-error class="mt-2" :messages="$errors->get('faculty')" />
+        </div>
+
+        <div
+            id="program_container"
+            style="display: {{ in_array(old('patient_type', optional($user->customer)->category), ['student','staff']) ? 'block' : 'none' }};"
+        >
+            <x-input-label for="program" :value="__('Program')" />
+            <x-text-input
+                id="program"
+                name="program"
+                type="text"
+                class="mt-1 block w-full"
+                :value="old('program', optional($user->customer)->program)"
+            />
+            <x-input-error class="mt-2" :messages="$errors->get('program')" />
+        </div>
 
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
@@ -97,29 +153,69 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600 "
-                >{{ __('Saved.') }}</p>
+                    class="text-sm text-gray-600"
+                >
+                    {{ __('Saved.') }}
+                </p>
             @endif
         </div>
     </form>
 </section>
 <script>
-    function toggleStudentId() {
-        const type = document.getElementById('patient_type').value;
-        const studentIdField = document.getElementById('student_id');
-        const studentIdContainer = document.getElementById('student_id_container');
+function toggleCategoryFields() {
+    const type = document.getElementById('patient_type').value;
 
-        if (type === 'Student') {
-            studentIdField.removeAttribute('disabled');
-            studentIdContainer.style.display = 'block';
-        } else {
-            studentIdField.setAttribute('disabled', true);
-            studentIdContainer.style.display = 'none';
-            studentIdField.value = '';
-        }
+    const studentContainer = document.getElementById('student_id_container');
+    const staffContainer = document.getElementById('staff_id_container');
+    const facultyContainer = document.getElementById('faculty_container');
+    const programContainer = document.getElementById('program_container');
+
+    const studentInput = document.getElementById('student_id');
+    const staffInput = document.getElementById('staff_id');
+    const facultyInput = document.getElementById('faculty');
+    const programInput = document.getElementById('program');
+
+    if (type === 'student') {
+        studentContainer.style.display = 'block';
+        staffContainer.style.display = 'none';
+
+        facultyContainer.style.display = 'block';
+        programContainer.style.display = 'block';
+
+        studentInput?.removeAttribute('disabled');
+        facultyInput?.removeAttribute('disabled');
+        programInput?.removeAttribute('disabled');
+        staffInput?.setAttribute('disabled', true);
+        staffInput && (staffInput.value = '');
+
+    } else if (type === 'staff') {
+        studentContainer.style.display = 'none';
+        staffContainer.style.display = 'block';
+
+        facultyContainer.style.display = 'block';
+        programContainer.style.display = 'block';
+
+        staffInput?.removeAttribute('disabled');
+        facultyInput?.removeAttribute('disabled');
+        programInput?.removeAttribute('disabled');
+        studentInput?.setAttribute('disabled', true);
+        studentInput && (studentInput.value = '');
+
+    } else {
+        studentContainer.style.display = 'none';
+        staffContainer.style.display = 'none';
+        facultyContainer.style.display = 'none';
+        programContainer.style.display = 'none';
+
+        [studentInput, staffInput, facultyInput, programInput].forEach(input => {
+            if (input) {
+                input.setAttribute('disabled', true);
+                input.value = '';
+            }
+        });
     }
+}
 
-    // Run on page load in case of old input
-    window.addEventListener('DOMContentLoaded', toggleStudentId);
+window.addEventListener('DOMContentLoaded', toggleCategoryFields);
 </script>
 

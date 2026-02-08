@@ -31,7 +31,6 @@ $genderDigit = intval(substr($ic, -1, 1));
         @csrf
         @method('PUT')
 
-        {{-- Top Bar --}}
         <div class="flex justify-between mb-5">
             <div class="bg-white px-5 py-2 w-40 rounded-lg inline-block font-semibold">{{ $patient->id }}</div>
             <button type="submit" class="justify-center inline-block bg-[#104F5D] hover:bg-[#1d3a41] text-white font-semibold px-5 py-2 rounded-lg shadow transition duration-200">
@@ -39,13 +38,11 @@ $genderDigit = intval(substr($ic, -1, 1));
             </button>
         </div>
 
-        {{-- Patient Information (Editable) --}}
         <div class="bg-white rounded-lg p-8 mb-4">
             <h2 class="text-center font-bold text-lg mb-3">PATIENT INFORMATION</h2>
 
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
 
-                {{-- Name --}}
                 <div>
                     <label class="font-semibold">Name</label>
                     <input
@@ -56,7 +53,6 @@ $genderDigit = intval(substr($ic, -1, 1));
                     >
                 </div>
 
-                {{-- IC Number --}}
                 <div>
                     <label class="font-semibold">IC Number</label>
                     <input
@@ -67,7 +63,6 @@ $genderDigit = intval(substr($ic, -1, 1));
                     >
                 </div>
 
-                {{-- Contact Number --}}
                 <div>
                     <label class="font-semibold">Contact Number</label>
                     <input
@@ -78,7 +73,6 @@ $genderDigit = intval(substr($ic, -1, 1));
                     >
                 </div>
 
-                {{-- Faculty --}}
                 <div>
                     <label class="font-semibold">Faculty</label>
                     <input
@@ -89,7 +83,6 @@ $genderDigit = intval(substr($ic, -1, 1));
                     >
                 </div>
 
-                {{-- Program --}}
                 <div>
                     <label class="font-semibold">Program</label>
                     <input
@@ -100,7 +93,6 @@ $genderDigit = intval(substr($ic, -1, 1));
                     >
                 </div>
 
-                {{-- Category --}}
                 <div>
                     <label class="font-semibold">Category</label>
                     <select

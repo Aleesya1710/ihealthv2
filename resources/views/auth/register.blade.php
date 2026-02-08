@@ -1,14 +1,13 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+    <div class="min-h-[40vh] flex items-center justify-center">
+        <form method="POST" action="{{ route('register') }}" class="w-full max-w-sm bg-white p-5 rounded-2xl shadow-lg">
         @csrf
-        <!-- Email Address -->
         <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
 
@@ -20,7 +19,6 @@
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <!-- Confirm Password -->
         <div class="mt-4">
             <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
 
@@ -40,5 +38,6 @@
                 {{ __('Register') }}
             </x-primary-button>
         </div>
-    </form>
+        </form>
+    </div>
 </x-guest-layout>

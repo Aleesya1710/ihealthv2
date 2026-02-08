@@ -1,14 +1,21 @@
-<div x-data="{ showLogin: false, isLogin: true }">
-    <!-- Navbar -->
-    <nav class="bg-[#10859F] text-white p-4 flex items-center justify-between">
+@php
+    $authErrors = $errors->has('email')
+        || $errors->has('password')
+        || $errors->has('name')
+        || $errors->has('password_confirmation');
+    $showLogin = ($authErrors || session('status')) ? 'true' : 'false';
+    $isForgot = (old('auth_view') === 'forgot' || session('status')) ? 'true' : 'false';
+    $isLogin = (old('name') || old('password_confirmation')) ? 'false' : 'true';
+@endphp
+<div x-data="{ showLogin: {{ $showLogin }}, isLogin: {{ $isLogin }}, isForgot: {{ $isForgot }} }">
+    <nav class="bg-[#10859F] text-white p-4 flex items-center justify-between shadow-md">
         <img class="w-35 h-20" src="{{asset('image/logo.png')}}" alt="">
         <div class="text-xl font-bold">Sport & Wellness Clinic FSR</div>
 
         <ul class="flex flex-1 justify-center gap-8">
             <li><a href="{{ url('/') }}" class="hover:underline">Home</a></li>
             <li>@auth <a href="{{ url('/appointment') }}" class="hover:underline">@else<a href="#" @click="showLogin = true; isLogin = true" class="hover:underline">@endauth Book Appointment</a></li>
-            @auth<li><a href="{{ route('appointmenthistory', Auth::user()->id) }}" class="hover:underline">Booking History</a></li>
-            @else <li><a href="{{ route('login') }}" class="hover:underline">Feedback</a></li>@endauth
+            @auth<li><a href="{{ route('appointmenthistory', Auth::user()->id) }}" class="hover:underline">Appointment History</a></li>@endauth
         </ul>
 
         @auth
@@ -31,7 +38,6 @@
                             {{ __('Profile') }}
                         </x-dropdown-link>
 
-                        <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
 

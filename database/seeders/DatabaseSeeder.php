@@ -1,5 +1,4 @@
 <?php
-// database/seeders/DatabaseSeeder.php
 
 namespace Database\Seeders;
 
@@ -12,10 +11,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Disable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        // Clear existing data
         DB::table('feedbacks')->truncate();
         DB::table('patientRecord')->truncate();
         DB::table('appointments')->truncate();
@@ -24,12 +21,9 @@ class DatabaseSeeder extends Seeder
         DB::table('staffs')->truncate();
         DB::table('users')->truncate();
 
-        // Enable foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // 1. USERS
         DB::table('users')->insert([
-            // ID 1 - Admin
             [
                 'id' => 1,
                 'name' => 'Admin User',
@@ -38,7 +32,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // ID 2 - Instructor 1
             [
                 'id' => 2,
                 'name' => 'Ahmad Yusaini Abd Karim',
@@ -47,7 +40,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // ID 3 - Instructor 2
             [
                 'id' => 3,
                 'name' => 'Nur Farhalina Jamaluddin',
@@ -56,7 +48,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // ID 4 - Public Customer
             [
                 'id' => 4,
                 'name' => 'Siti Nurhaliza',
@@ -65,7 +56,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // ID 5 - Public Customer
             [
                 'id' => 5,
                 'name' => 'Muhammad Hafiz',
@@ -74,7 +64,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // ID 6 - Student Customer
             [
                 'id' => 6,
                 'name' => 'Nurul Aina Binti Ahmad',
@@ -83,7 +72,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // ID 7 - Student Customer
             [
                 'id' => 7,
                 'name' => 'Ahmad Danial Bin Hassan',
@@ -92,7 +80,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // ID 8 - Staff Customer (university staff, not instructor)
             [
                 'id' => 8,
                 'name' => 'Zainal Abidin',
@@ -101,7 +88,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // ID 9 - Staff Customer (university staff, not instructor)
             [
                 'id' => 9,
                 'name' => 'Faridah Rahman',
@@ -112,7 +98,6 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 2. STAFF (Instructors only)
         DB::table('staffs')->insert([
             [
                 'position' => 'Admin',
@@ -136,7 +121,6 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 3. SERVICES
         DB::table('services')->insert([
             [
                 'id' => 1,
@@ -212,9 +196,7 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 4. CUSTOMERS
         DB::table('customers')->insert([
-            // Public Customer 1
             [
                 'id' => 1,
                 'ICNumber' => '990123-10-5678',
@@ -228,7 +210,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Public Customer 2
             [
                 'id' => 2,
                 'ICNumber' => '950615-08-1234',
@@ -242,7 +223,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Student Customer 1
             [
                 'id' => 3,
                 'ICNumber' => '040305-14-0987',
@@ -256,7 +236,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Student Customer 2
             [
                 'id' => 4,
                 'ICNumber' => '030812-10-2345',
@@ -270,7 +249,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Staff Customer 1 (university staff, NOT instructor)
             [
                 'id' => 5,
                 'ICNumber' => '850420-05-3456',
@@ -284,7 +262,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Staff Customer 2 (university staff, NOT instructor)
             [
                 'id' => 6,
                 'ICNumber' => '880715-12-4567',
@@ -300,9 +277,7 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 5. APPOINTMENTS (NO customer_id - it's in patientRecord!)
         DB::table('appointments')->insert([
-            // Appointment 1 - Sport Massage (will have 1 patient record)
             [
                 'id' => 1,
                 'date' => Carbon::now()->subDays(10)->format('Y-m-d'),
@@ -313,7 +288,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Appointment 2 - Therapeutic Exercises (will have 1 patient record)
             [
                 'id' => 2,
                 'date' => Carbon::now()->subDays(8)->format('Y-m-d'),
@@ -324,7 +298,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Appointment 3 - Yoga (will have 3 patient records - group booking)
             [
                 'id' => 3,
                 'date' => Carbon::now()->addDays(3)->format('Y-m-d'),
@@ -335,7 +308,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Appointment 4 - Body Composition (will have 1 patient record, even though cancelled)
             [
                 'id' => 4,
                 'date' => Carbon::now()->subDays(2)->format('Y-m-d'),
@@ -346,7 +318,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Appointment 5 - Yoga (will have 2 patient records - couple booking)
             [
                 'id' => 5,
                 'date' => Carbon::now()->addDays(5)->format('Y-m-d'),
@@ -357,7 +328,6 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // Appointment 6 - Yoga (will have 4 patient records - group booking)
             [
                 'id' => 6,
                 'date' => Carbon::now()->subDays(5)->format('Y-m-d'),
@@ -370,9 +340,7 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 6. PATIENT RECORDS (Bridge between appointments and customers)
         DB::table('patientRecord')->insert([
-            // === APPOINTMENT 1: Sport Massage - 1 customer ===
             [
                 'place_of_injury' => 'Chest',
                 'symptoms' => json_encode(['chronic_pain', 'back_pain', 'shoulder_injury', 'neck_pain']),
@@ -387,7 +355,6 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ],
             
-            // === APPOINTMENT 2: Therapeutic Exercises - 1 customer ===
             [
                 'place_of_injury' => 'Left Leg',
                 'symptoms' => json_encode(['knee_injury']),
@@ -402,7 +369,6 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ],
             
-            // === APPOINTMENT 3: Yoga Group - 3 customers ===
             [
                 'place_of_injury' => null,
                 'symptoms' => json_encode(['stress', 'poor_flexibility']),
@@ -443,7 +409,6 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ],
             
-            // === APPOINTMENT 4: Body Composition - 1 customer (CANCELLED) ===
             [
                 'place_of_injury' => null,
                 'symptoms' => json_encode(['weight_management']),
@@ -458,7 +423,6 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ],
             
-            // === APPOINTMENT 5: Yoga Couple - 2 customers (UPCOMING) ===
             [
                 'place_of_injury' => null,
                 'symptoms' => json_encode(['flexibility_issues']),
@@ -486,7 +450,6 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => now(),
             ],
             
-            // === APPOINTMENT 6: Yoga Group - 4 customers (COMPLETED) ===
             [
                 'place_of_injury' => null,
                 'symptoms' => json_encode(['general_wellness']),
@@ -541,7 +504,6 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 7. FEEDBACK (Only for completed appointments)
         DB::table('feedbacks')->insert([
             [
                 'message' => 'Excellent service! The sport massage really helped with my muscle recovery. Instructor Ahmad was very professional.',

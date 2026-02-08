@@ -115,7 +115,7 @@
                 </div>
             </div>
             @endif
-            @php $selectedPatientType = old('patient_type', $patient->patient_type ?? ''); @endphp
+            @php $selectedPatientType = old('patient_type', $patient->category ?? ''); @endphp
 
             <div class="w-[85%] bg-[#FBF9F9] h-auto p-5 rounded-lg mb-10">
                 <h3 class="font-semibold text-xl">Patient Detail</h3>
@@ -131,7 +131,7 @@
                         </label>
 
                         <label class="cursor-pointer w-1/4 ">
-                            <input type="radio" name="patient_type" value="staff" class="sr-only peer" {{ $selectedPatientType === 'uitm staff' ? 'checked' : '' }}>
+                            <input type="radio" name="patient_type" value="staff" class="sr-only peer" {{ $selectedPatientType === 'staff' ? 'checked' : '' }}>
                             <div class="px-6 py-3 rounded-lg border text-center peer-checked:bg-blue-300 peer-checked:text-white peer-checked:border-gray-400 transition">
                             UiTM Staff
                             </div>
@@ -148,34 +148,41 @@
                     <div class="flex gap-10">
                         <div class="w-[50%]">
                             <label for="ic_number" class="block text-sm font-medium text-gray-700">IC Number <span class="text-red-500">*</span></label>
-                            <input type="text" name="ic_number" id="ic_number" required value="{{ old('ic_number', $patient->ic_number ?? '') }}"
+                            <input type="text" name="ic_number" id="ic_number" required value="{{ old('ic_number', $patient->ICNumber ?? '') }}"
                                    class="mt-1 block w-full border-gray-300 rounded-xl h-14 shadow-sm focus:ring-[#10859F] focus:border-[#10859F]">
                         </div>
-                        <div class="w-[50%]" id="student-id-container">
+                        <div class="w-[50%] hidden" id="student-id-container">
                             <label for="student_id" class="block text-sm font-medium text-gray-700">
-                                Staff / Student ID <span class="text-red-500">*</span>
+                                Student ID <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="student_id" id="student_id" value="{{ old('student_id', $patient->student_id ?? '') }}"
+                            <input type="text" name="student_id" id="student_id" value="{{ old('student_id', $patient->studentID ?? '') }}"
+                                class="mt-1 block w-full border-gray-300 rounded-xl h-14 shadow-sm focus:ring-[#10859F] focus:border-[#10859F] disabled:bg-gray-100 disabled:cursor-not-allowed">
+                        </div>
+                        <div class="w-[50%] hidden" id="staff-id-container">
+                            <label for="staff_id" class="block text-sm font-medium text-gray-700">
+                                Staff ID <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="staff_id" id="staff_id" value="{{ old('staff_id', $patient->staffID ?? '') }}"
                                 class="mt-1 block w-full border-gray-300 rounded-xl h-14 shadow-sm focus:ring-[#10859F] focus:border-[#10859F] disabled:bg-gray-100 disabled:cursor-not-allowed">
                         </div>
                         <div class="w-[50%]">
                             <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
-                            <input type="text" name="phone_number" id="phone_number" required  value="{{ old('phone_number', $patient->contact_number ?? '') }}"
+                            <input type="text" name="phone_number" id="phone_number" required  value="{{ old('phone_number', $patient->phoneNumber ?? '') }}"
                                    class="mt-1 block w-full border-gray-300 rounded-xl h-14 shadow-sm focus:ring-[#10859F] focus:border-[#10859F]">
                         </div>
                     
                     
                     </div>
                     <div class="flex gap-10">
-                    <div class="w-[50%]">
+                    <div class="w-[50%]" id="faculty-container">
                             <label for="Faculty" class="block text-sm font-medium text-gray-700">Faculty <span class="text-red-500">*</span></label>
-                            <input type="text" name="Faculty" id="Faculty" required  value="{{ old('phone_number', $patient->contact_number ?? '') }}"
-                                   class="mt-1 block w-full border-gray-300 rounded-xl h-14 shadow-sm focus:ring-[#10859F] focus:border-[#10859F]">
+                            <input type="text" name="Faculty" id="Faculty" value="{{ old('Faculty', $patient->faculty ?? '') }}"
+                                   class="mt-1 block w-full border-gray-300 rounded-xl h-14 shadow-sm focus:ring-[#10859F] focus:border-[#10859F] disabled:bg-gray-100 disabled:cursor-not-allowed">
                         </div>
-                    <div class="w-[50%]">
+                    <div class="w-[50%]" id="program-container">
                             <label for="Program" class="block text-sm font-medium text-gray-700">Program <span class="text-red-500">*</span></label>
-                            <input type="text" name="Program" id="Program" required  value="{{ old('phone_number', $patient->contact_number ?? '') }}"
-                                   class="mt-1 block w-full border-gray-300 rounded-xl h-14 shadow-sm focus:ring-[#10859F] focus:border-[#10859F]">
+                            <input type="text" name="Program" id="Program" value="{{ old('Program', $patient->program ?? '') }}"
+                                   class="mt-1 block w-full border-gray-300 rounded-xl h-14 shadow-sm focus:ring-[#10859F] focus:border-[#10859F] disabled:bg-gray-100 disabled:cursor-not-allowed">
                         </div>
                     </div>
                     @if ($services->id != 6)
@@ -192,7 +199,7 @@
                                     class="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-[#10859F] focus:border-[#10859F]"></textarea>
                     </div>
                     <div class="w-full h-52 flex flex-col justify-center bg-gray-300 shadow-3xl mt-8 p-4 rounded-3xl shadow-sm">
-                        <h3 class="mt-1 font-semibold text-lg">Booking policy:</h3>
+                        <h3 class="mt-1 font-semibold text-lg">Appointment policy:</h3>
                         <p> UNTUK MAKLUMAT LANJUT SILA BERHUBUNG DI TALIAN: 03-55442964. UNTUK TEMUJANJI BAHARU SILA PASTIKAN ANDA MEMPUNYAI SURAT RUJUKAN SEBELUM MEMULAKAN TEMPAHAN RAWATAN</p>
                         <h3 class="mt-2 font-semibold text-lg">Additional information:</h3>
                         <p>When booking with Sports & Wellness Clinic FSR, you may receive appointment-specific communication from iHealth portal. This includes confirmations via email.</p>
@@ -202,7 +209,7 @@
             
             <div class="text-center">
                 <button type="submit"
-                   class="bg-[#FBF9F9] text-black p-8 px-40 rounded-3xl hover:bg-[#0c3e4a] hover:text-white">
+                   class="bg-[#FBF9F9] text-black p-8 px-40 rounded-3xl hover:bg-blue-200 hover:text-white">
                    Book Now
                 </button>
             </div>
@@ -213,21 +220,89 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const unavailableDates = @json($holidays); // holidays from backend
+    const patientTypeInputs = document.querySelectorAll('input[name="patient_type"]');
+    const studentContainer = document.getElementById('student-id-container');
+    const staffContainer = document.getElementById('staff-id-container');
+    const studentInput = document.getElementById('student_id');
+    const staffInput = document.getElementById('staff_id');
+    const facultyInput = document.getElementById('Faculty');
+    const programInput = document.getElementById('Program');
+    const facultyContainer = document.getElementById('faculty-container');
+    const programContainer = document.getElementById('program-container');
+
+    function setFieldState(input, enabled) {
+        if (!input) return;
+        if (enabled) {
+            input.removeAttribute('disabled');
+        } else {
+            input.setAttribute('disabled', true);
+        }
+    }
+
+    function togglePatientFields() {
+        const selected = document.querySelector('input[name="patient_type"]:checked')?.value;
+
+        if (selected === 'student') {
+            studentContainer.classList.remove('hidden');
+            staffContainer.classList.add('hidden');
+            studentInput.required = true;
+            staffInput.required = false;
+            setFieldState(studentInput, true);
+            setFieldState(staffInput, false);
+            setFieldState(facultyInput, true);
+            setFieldState(programInput, true);
+            facultyInput.required = true;
+            programInput.required = true;
+            facultyContainer.classList.remove('hidden');
+            programContainer.classList.remove('hidden');
+        } else if (selected === 'staff') {
+            staffContainer.classList.remove('hidden');
+            studentContainer.classList.add('hidden');
+            staffInput.required = true;
+            studentInput.required = false;
+            setFieldState(staffInput, true);
+            setFieldState(studentInput, false);
+            setFieldState(facultyInput, true);
+            setFieldState(programInput, true);
+            facultyInput.required = true;
+            programInput.required = true;
+            facultyContainer.classList.remove('hidden');
+            programContainer.classList.remove('hidden');
+        } else if (selected === 'public') {
+            studentContainer.classList.add('hidden');
+            staffContainer.classList.add('hidden');
+            studentInput.required = false;
+            staffInput.required = false;
+            setFieldState(studentInput, false);
+            setFieldState(staffInput, false);
+            setFieldState(facultyInput, false);
+            setFieldState(programInput, false);
+            facultyInput.required = false;
+            programInput.required = false;
+            facultyContainer.classList.add('hidden');
+            programContainer.classList.add('hidden');
+        }
+    }
+
+    patientTypeInputs.forEach(input => {
+        input.addEventListener('change', togglePatientFields);
+    });
+    togglePatientFields();
+
+    const unavailableDates = @json($holidays);
     let selectedSlot = null;
     let selectedDate = null;
     let bookedStaff = {};
 
     console.log("Holidays:", unavailableDates);
 
-    // Initialize Flatpickr
     flatpickr("#flat-calendar", {
         inline: true,
         minDate: "today",
         appendTo: document.getElementById("calendar-container"),
         disable: [
             ...unavailableDates,
-            date => date.getDay() === 0 || date.getDay() === 6 // disable weekends
+            date => date.getDay() === 0 || date.getDay() === 6
         ],
         onChange: function(selectedDates, dateStr) {
             selectedDate = dateStr;
@@ -237,7 +312,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             console.log("Selected date:", selectedDate);
 
-            // Enable all instructors
             document.querySelectorAll(".instructor-radio").forEach(input => {
                 input.disabled = false;
                 input.closest("label").classList.remove("opacity-50", "cursor-not-allowed");
@@ -255,9 +329,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("Backend slots data:", data);
                 bookedStaff = {};
 
-                // Normalize bookedStaff keys to "HH:mm" format
                 for (let key in data.bookedStaff) {
-                    let formattedKey = key.slice(0,5); // "15:30"
+                    let formattedKey = key.slice(0,5); 
                     bookedStaff[formattedKey] = data.bookedStaff[key];
                 }
 
@@ -275,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         slots.forEach(slot => {
             const staffBooked = bookedStaff[slot] || [];
-            const isFullyBooked = staffBooked.length >= 2; // max 2 per slot
+            const isFullyBooked = staffBooked.length >= 2; 
             console.log(`Slot: ${slot}, staff booked:`, staffBooked, "fully booked?", isFullyBooked);
 
             const btn = document.createElement("button");
@@ -299,15 +372,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     time: selectedSlot
                 });
 
-                // Highlight selected slot
-                container.querySelectorAll("button").forEach(b => {
-                    b.classList.remove("bg-blue-500", "text-white", "bg-[#353D3F]");
+                container.querySelectorAll("button:not(:disabled)").forEach(b => {
+                    b.classList.remove("bg-blue-500", "text-white");
                     b.classList.add("bg-transparent", "text-black", "border");
                 });
+
                     btn.classList.remove("bg-transparent", "text-black", "border");
                     btn.classList.add("bg-blue-500", "text-white");
 
-                // Update instructor availability
                 updateInstructorOptions(staffBooked);
             });
 
@@ -316,7 +388,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
    function updateInstructorOptions(staffBookedIds) {
-    // ensure all IDs are numbers
     const bookedIds = staffBookedIds.map(id => Number(id));
 
     document.querySelectorAll(".instructor-radio").forEach(input => {
@@ -334,6 +405,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log("updateInstructorOptions called for slot, booked IDs:", bookedIds);
 }
+
+const form = document.getElementById('appointment-form');
+const warningBox = document.getElementById('validation-warning');
+
+form.addEventListener('submit', function (e) {
+    let hasError = false;
+
+    warningBox.classList.remove('show');
+    document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+
+    const date = document.getElementById('appointment_date').value;
+    const time = document.getElementById('appointment_time').value;
+
+    if (!date || !time) {
+        document.getElementById('datetime-error').classList.add('show');
+        hasError = true;
+    }
+
+    const instructorSection = document.getElementById('instructor-section');
+    if (instructorSection) {
+        const selectedInstructor = document.querySelector('input[name="staff_id"]:checked');
+        if (!selectedInstructor) {
+            document.getElementById('instructor-error').classList.add('show');
+            hasError = true;
+        }
+    }
+
+    if (hasError) {
+        e.preventDefault();
+        warningBox.classList.add('show');
+        warningBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
 
 });
 </script>

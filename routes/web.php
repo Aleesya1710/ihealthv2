@@ -3,13 +3,11 @@
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\FeedbackController;
-use App\Http\Controllers\HolidayController;
-use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientRecordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\DashboardController;
-use App\Models\Appointment;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -29,7 +27,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-//customer
 Route::get('/appointment', [ServiceController::class, 'index'])->name('Customer.booking');
 Route::get('/appointment/{id}',[AppointmentController::class, 'create'])->name('Customer.createbooking');
 Route::post('/appointment/store', [AppointmentController::class, 'store'])->name('appointment.store');
@@ -40,7 +37,6 @@ Route::patch('/appointment/{appointment}/cancel', [AppointmentController::class,
 Route::post('/appointment/feedback', [FeedbackController::class, 'store'])->name('createfeedback');
 
 
-//staff
 Route::get('/dashboardS', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboardS');
 Route::get('/appointmentmanagement', [AppointmentController::class, 'index'])->name('appoinmentmanagement');
 Route::patch('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointment.cancel');
@@ -55,5 +51,9 @@ Route::put('/patients/{id}', [CustomerController::class, 'update'])->name('patie
 Route::get('/patient-report/{id}/preview', [PatientRecordController::class, 'reportPreview'])->name('patients.report.preview');
 Route::get('/patient-report/{id}/generate-pdf', [PatientRecordController::class, 'generatePdf'])->name('patientrecord.report.download');
 
+
+Route::get('/reports', [ReportController::class, 'index'])->name('report.index');
+Route::post('/reports/generate', [ReportController::class, 'generate'])->name('report.generate');
+Route::post('/reports/download', [ReportController::class, 'download'])->name('report.download');
 
 require __DIR__.'/auth.php';

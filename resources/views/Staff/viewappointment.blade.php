@@ -4,7 +4,6 @@
 <div class="max-w-5xl mx-auto bg-white p-8 mt-10 rounded-xl shadow-lg">
     <h1 class="text-3xl font-bold text-center mb-8 text-[#104F5D]">Appointment Details</h1>
 
-    {{-- Patient Info --}}
     <div class="mb-8 border-b pb-6">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Patient Information</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
@@ -27,7 +26,6 @@
 
     </div>
 
-    {{-- Appointment Info --}}
    <div class="mb-8">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">Appointment Info</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-800">
@@ -47,7 +45,6 @@
     </div>
 
 
-    {{-- Treatment Plan Form --}}
     <form method="POST" action="{{ route('updateappointment',  ['id' => $appointment->patient_id, 'appointmentId' => $appointment->id]) }}">
         @csrf
         @method('PUT')

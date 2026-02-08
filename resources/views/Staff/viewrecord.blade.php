@@ -3,7 +3,6 @@
 @section('content')
 <div class="bg-gray-300 p-6 rounded-2xl max-w-5xl mx-auto shadow-md">
 
-    {{-- Top Bar --}}
     <div class="flex justify-between mb-5">
         <div class="bg-white px-5 py-2 w-40 rounded-lg inline-block font-semibold">
             {{ $patient->id }}
@@ -14,15 +13,8 @@
                     onclick="openModal('updatePatientModal')">
                 Update Record
             </button>
-
-
-            <a href="{{ route('patients.report.preview', $patient->id) }}"
-               class="inline-block px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                🧾 Download Report PDF
-            </a>
         </div>
     </div>
-    {{-- Patient Information --}}
     <div class="bg-white rounded-lg p-8 mb-4">
         <h2 class="text-center font-bold text-lg mb-3">PATIENT INFORMATION</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -47,24 +39,39 @@
         </div>
     </div>
 
-    {{-- Medical Information --}}
     <div class="bg-white rounded-lg p-6 mb-6 shadow">
         <h2 class="text-center font-bold text-2xl mb-6">Medical Information</h2>
         @php
-            $painLocation = $patientrecord->pluck('place_of_injury')->flatten()->filter()->unique();
+            $painLocation = $patientrecord->pluck('place_of_injury')
+                ->filter()
+                ->flatMap(function ($value) {
+                    if (is_array($value)) {
+                        return $value;
+                    }
+                    return array_filter(array_map('trim', explode(',', $value)));
+                })
+                ->filter()
+                ->unique()
+                ->values();
         @endphp
-            {{-- Pain Assessment + Treatment Plan --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {{-- Pain Assessment --}}
                 <div class="bg-white rounded-lg p-4">
                     <h2 class="text-center font-bold text-lg mb-3">PAIN ASSESSMENT</h2>
                     <svg id="anatomy" viewBox="0 0 200 300" class="w-full h-auto bg-gray-100 rounded">
-                        <circle id="head" cx="100" cy="40" r="30" fill="{{ $painLocation->contains('Head') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                        <rect id="chest" x="70" y="80" width="60" height="80" fill="{{ $painLocation->contains('Chest') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                        <rect id="left-arm" x="30" y="80" width="30" height="100" fill="{{ $painLocation->contains('Left Arm') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                        <rect id="right-arm" x="140" y="80" width="30" height="100" fill="{{ $painLocation->contains('Right Arm') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                        <rect id="left-leg" x="70" y="180" width="25" height="100" fill="{{ $painLocation->contains('Left Leg') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                        <rect id="right-leg" x="105" y="180" width="25" height="100" fill="{{ $painLocation->contains('Right Leg') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
+                        <g class="stroke-gray-300" stroke-width="1">
+                            <circle id="head" data-part="Head" cx="100" cy="44" r="24"
+                                fill="{{ $painLocation->contains('Head') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                            <rect id="chest" data-part="Chest" x="68" y="76" width="64" height="100" rx="16"
+                                fill="{{ $painLocation->contains('Chest') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                            <rect id="left-arm" data-part="Left Arm" x="40" y="84" width="22" height="106" rx="11"
+                                fill="{{ $painLocation->contains('Left Arm') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                            <rect id="right-arm" data-part="Right Arm" x="138" y="84" width="22" height="106" rx="11"
+                                fill="{{ $painLocation->contains('Right Arm') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                            <rect id="left-leg" data-part="Left Leg" x="78" y="180" width="20" height="110" rx="10"
+                                fill="{{ $painLocation->contains('Left Leg') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                            <rect id="right-leg" data-part="Right Leg" x="102" y="180" width="20" height="110" rx="10"
+                                fill="{{ $painLocation->contains('Right Leg') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                        </g>
                     </svg>
                 </div>
 
@@ -118,7 +125,6 @@
         </div>
     </div>
 
-    {{-- Appointment History --}}
     <div class="mt-8">
         <h2 class="text-center font-bold text-lg mb-3">APPOINTMENT HISTORY</h2>
 
@@ -138,13 +144,11 @@
                    class="flex items-center gap-2 text-blue-600 hover:text-blue-800">
 
                     @if($app->status === 'upcoming')
-                        <!-- Pen/Edit Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5l3 3L14 13H11v-3l7.5-7.5z" />
                         </svg>
                     @else
-                        <!-- Eye/View Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -156,17 +160,14 @@
                 </a>
             </div>
 
-            {{-- Modal --}}
             <div id="modal-{{ $app->id }}" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
                 <div class="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-lg relative">
                     
-                    {{-- Fixed Header with Close Button --}}
                     <div class="flex justify-between items-center p-6 border-b">
                         <h2 class="text-2xl font-bold">Appointment Details</h2>
                         <button data-modal-hide="modal-{{ $app->id }}" class="text-gray-500 hover:text-gray-700 text-3xl leading-none">×</button>
                     </div>
 
-                    {{-- Scrollable Content --}}
                     <div class="overflow-y-auto p-6 flex-1">
                         @php
                             $record = $patientrecord->where('appointment_id', $app->id)->first();
@@ -182,7 +183,6 @@
                                 <input type="hidden" name="place_of_injury" id="place_of_injury_{{ $app->id }}" value="{{ is_array($record->place_of_injury) ? implode(',', $record->place_of_injury) : ($record->place_of_injury ?? '') }}">
 
                                 <div class="space-y-4">
-                                    {{-- Appointment Information --}}
                                     <div class="bg-gray-50 rounded-lg p-6">
                                         <h3 class="text-center font-bold text-lg mb-4">APPOINTMENT INFORMATION</h3>
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -201,26 +201,37 @@
                                         </div>
                                     </div>
 
-                                    {{-- Medical Summary (Editable) --}}
                                     <div class="bg-gray-50 rounded-lg p-6">
                                         <h3 class="text-center font-bold text-lg mb-4">
                                             Appointment Medical Summary
                                         </h3>
 
-                                        {{-- Pain Assessment and Type of Injury Side by Side --}}
                                         <div class="grid grid-cols-2 gap-4 mb-4">
-                                            {{-- Pain Assessment - Left Side (Clickable) --}}
                                             <div class="bg-white rounded-lg p-3">
                                                 <h4 class="text-center font-semibold text-sm mb-2">PAIN ASSESSMENT</h4>
                                                 <p class="text-xs text-center text-gray-500">Click on body parts to select</p>
                                                 <div class="flex justify-center">
-                                                    <svg id="anatomy-{{ $app->id }}" viewBox="0 0 200 230" style="width: 250px; height: 275px;" class="bg-white rounded">
-                                                        <circle data-part="Head" cx="100" cy="40" r="20" fill="{{ $recordPainLocation->contains('Head') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
-                                                        <rect data-part="Chest" x="75" y="65" width="50" height="60" fill="{{ $recordPainLocation->contains('Chest') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
-                                                        <rect data-part="Left Arm" x="40" y="65" width="25" height="70" fill="{{ $recordPainLocation->contains('Left Arm') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
-                                                        <rect data-part="Right Arm" x="135" y="65" width="25" height="70" fill="{{ $recordPainLocation->contains('Right Arm') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
-                                                        <rect data-part="Left Leg" x="80" y="135" width="18" height="80" fill="{{ $recordPainLocation->contains('Left Leg') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
-                                                        <rect data-part="Right Leg" x="102" y="135" width="18" height="80" fill="{{ $recordPainLocation->contains('Right Leg') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                                                    <svg id="anatomy-{{ $app->id }}" viewBox="0 0 200 300" style="width: 250px; height: 300px;" class="bg-white rounded">
+                                                        <g stroke="#D1D5DB" stroke-width="2">
+                                                            <circle data-part="Head" cx="100" cy="44" r="24"
+                                                                fill="{{ $recordPainLocation->contains('Head') ? '#60A5FA' : '#E5E7EB' }}"
+                                                                class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                                                            <rect data-part="Chest" x="68" y="76" width="64" height="100" rx="16"
+                                                                fill="{{ $recordPainLocation->contains('Chest') ? '#60A5FA' : '#E5E7EB' }}"
+                                                                class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                                                            <rect data-part="Left Arm" x="40" y="84" width="22" height="106" rx="11"
+                                                                fill="{{ $recordPainLocation->contains('Left Arm') ? '#60A5FA' : '#E5E7EB' }}"
+                                                                class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                                                            <rect data-part="Right Arm" x="138" y="84" width="22" height="106" rx="11"
+                                                                fill="{{ $recordPainLocation->contains('Right Arm') ? '#60A5FA' : '#E5E7EB' }}"
+                                                                class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                                                            <rect data-part="Left Leg" x="78" y="180" width="20" height="110" rx="10"
+                                                                fill="{{ $recordPainLocation->contains('Left Leg') ? '#60A5FA' : '#E5E7EB' }}"
+                                                                class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                                                            <rect data-part="Right Leg" x="102" y="180" width="20" height="110" rx="10"
+                                                                fill="{{ $recordPainLocation->contains('Right Leg') ? '#60A5FA' : '#E5E7EB' }}"
+                                                                class="hover:fill-blue-300 cursor-pointer transition-colors" />
+                                                        </g>
                                                     </svg>
                                                 </div>
                                             </div>
@@ -252,7 +263,6 @@
                                                 </select>
                                             </div>
 
-                                            {{-- Type of Injury - Right Side (Editable) --}}
                                             <div>
                                                 <label class="block text-gray-700 font-semibold mb-1">Type of Injury</label>
                                                 <select multiple
@@ -283,7 +293,6 @@
                                                         </div>
                                         </div>
 
-                                        {{-- Treatment --}}
                                         <div>
                                             <label class="block  font-semibold mb-1">Treatment</label>
                                             <select multiple
@@ -319,13 +328,11 @@
                                         </div>
 
 
-                                        {{-- Notes --}}
                                         <div class="mb-4">
                                             <label class="font-semibold block mb-2">Additional Notes</label>
                                             <textarea name="notes" class="block w-full border border-gray-300 px-4 py-2 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3">{{ $record->notes ?? '' }}</textarea>
                                         </div>
 
-                                        {{-- Save Button --}}
                                         <div class="flex justify-end">
                                             <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 shadow">
                                                 Save Changes
@@ -347,22 +354,17 @@
                                         part.addEventListener('click', function () {
                                             const selected = this.getAttribute('data-part');
                                             
-                                            // Toggle selection
                                             if (selectedParts.includes(selected)) {
-                                                // Remove from selection
                                                 selectedParts = selectedParts.filter(p => p !== selected);
                                                 this.setAttribute('fill', '#E0E0E0');
                                             } else {
-                                                // Add to selection
                                                 selectedParts.push(selected);
                                                 this.setAttribute('fill', '#60A5FA');
                                             }
                                             
-                                            // Update hidden input
                                             inputPlace.value = selectedParts.join(',');
                                         });
 
-                                        // Pre-select from DB
                                         if (selectedParts.includes(part.getAttribute('data-part'))) {
                                             part.setAttribute('fill', '#60A5FA');
                                         }
@@ -371,7 +373,6 @@
                             </script>
                         @else
                             <div class="space-y-4">
-                                {{-- Appointment Information --}}
                                 <div class="bg-gray-50 rounded-lg p-6">
                                     <h3 class="text-center font-bold text-lg mb-4">APPOINTMENT INFORMATION</h3>
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -390,25 +391,30 @@
                                     </div>
                                 </div>
 
-                                {{-- Medical Summary --}}
                                 <div class="bg-gray-50 rounded-lg p-6">
                                     <h3 class="text-center font-bold text-lg mb-4">
                                         Appointment Medical Summary
                                     </h3>
 
-                                    {{-- Pain Assessment and Type of Injury Side by Side --}}
                                     <div class="grid grid-cols-2 gap-4 mb-4">
-                                        {{-- Pain Assessment - Left Side --}}
                                         <div class="bg-white rounded-lg p-3">
                                             <h4 class="text-center font-semibold text-sm mb-2">PAIN ASSESSMENT</h4>
                                             <div class="flex justify-center">
-                                                <svg viewBox="0 0 200 220" style="width: 250px; height: 275px;" class="bg-gray-100 rounded">
-                                                    <circle cx="100" cy="40" r="20" fill="{{ $recordPainLocation->contains('Head') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                                                    <rect x="75" y="65" width="50" height="60" fill="{{ $recordPainLocation->contains('Chest') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                                                    <rect x="40" y="65" width="25" height="70" fill="{{ $recordPainLocation->contains('Left Arm') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                                                    <rect x="135" y="65" width="25" height="70" fill="{{ $recordPainLocation->contains('Right Arm') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                                                    <rect x="80" y="135" width="18" height="80" fill="{{ $recordPainLocation->contains('Left Leg') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
-                                                    <rect x="102" y="135" width="18" height="80" fill="{{ $recordPainLocation->contains('Right Leg') ? '#60A5FA' : '#E0E0E0' }}" class="hover:fill-blue-300 cursor-pointer" />
+                                                <svg viewBox="0 0 200 300" style="width: 250px; height: 275px;" class="bg-gray-100 rounded">
+                                                    <g class="stroke-gray-300" stroke-width="1">
+                                                        <circle cx="100" cy="44" r="24"
+                                                            fill="{{ $recordPainLocation->contains('Head') ? '#60A5FA' : '#E0E0E0' }}" />
+                                                        <rect x="68" y="76" width="64" height="100" rx="16"
+                                                            fill="{{ $recordPainLocation->contains('Chest') ? '#60A5FA' : '#E0E0E0' }}" />
+                                                        <rect x="40" y="84" width="22" height="106" rx="11"
+                                                            fill="{{ $recordPainLocation->contains('Left Arm') ? '#60A5FA' : '#E0E0E0' }}" />
+                                                        <rect x="138" y="84" width="22" height="106" rx="11"
+                                                            fill="{{ $recordPainLocation->contains('Right Arm') ? '#60A5FA' : '#E0E0E0' }}" />
+                                                        <rect x="78" y="180" width="20" height="110" rx="10"
+                                                            fill="{{ $recordPainLocation->contains('Left Leg') ? '#60A5FA' : '#E0E0E0' }}" />
+                                                        <rect x="102" y="180" width="20" height="110" rx="10"
+                                                            fill="{{ $recordPainLocation->contains('Right Leg') ? '#60A5FA' : '#E0E0E0' }}" />
+                                                    </g>
                                                 </svg>
                                             </div>
                                         </div>
@@ -428,7 +434,6 @@
                                                 @endforelse
                                             </div>
                                         </div>
-                                        {{-- Type of Injury - Right Side --}}
                                         <div class="bg-white rounded-lg p-3">
                                             <h4 class="font-semibold text-sm mb-2">Type of Injury</h4>
                                             <div class="space-y-2">
@@ -447,7 +452,6 @@
                                         </div>
                                     </div>
 
-                                    {{-- Treatment --}}
                                     <div class="mb-4">
                                         <label class="font-semibold block mb-2">Treatment / Intervention</label>
                                         <div class="space-y-2">
@@ -464,7 +468,6 @@
                                         </div>
                                     </div>
 
-                                    {{-- Notes --}}
                                     <div>
                                         <label class="font-semibold block mb-2">Additional Notes</label>
                                         <div class="bg-white p-3 rounded shadow-sm">
@@ -480,15 +483,11 @@
         @endforeach
     </div>
 
-    {{--update modal--}}
-<!-- Update Patient Modal -->
 <div id="updatePatientModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white rounded-lg w-4/5 max-w-3xl p-6 relative">
 
-        <!-- Close Button -->
         <button type="button" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" onclick="closeModal('updatePatientModal')">✕</button>
 
-        <!-- Modal Content -->
         <h2 class="text-xl font-bold mb-4">Update Patient Record</h2>
 
         <form method="POST" action="{{ route('patient.update', $patient->id) }}">
